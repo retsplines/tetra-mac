@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use super::{cursor::Cursor, encoder::Decodable};
+use crate::codec::{Cursor, Decodable};
 
 #[derive(Debug)]
 enum EncryptionMode {
@@ -175,9 +175,9 @@ struct ChannelAllocation {
 
 #[derive(Debug)]
 pub struct MACResourcePDU {
-    pub fill_bit_indication: bool,
-    pub grant_is_on_current_channel: bool,
-    pub length: LengthIndication,
+    fill_bit_indication: bool,
+    grant_is_on_current_channel: bool,
+    length: LengthIndication,
     address: Address,
     power_control: Option<PowerControl>,
     slot_granting: Option<SlotGranting>,
@@ -201,14 +201,12 @@ impl Decodable for MACResourcePDU {
 
         let power_control = PowerControlOptional::decode(cursor);
 
-
-
         Self {
             fill_bit_indication,
             grant_is_on_current_channel,
             length,
             address,
-            power_control: power_control,
+            power_control: None,
             slot_granting: None,
             channel_allocation: None,
             tm_sdu: Some(vec![1_u8])

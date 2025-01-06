@@ -1,9 +1,5 @@
-pub mod pdu {
-    pub mod mac_resource;
-    mod elements;
-    mod encoder;
-    mod cursor;
-}
+mod pdu;
+mod codec;
 
 fn main() {
     

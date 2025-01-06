@@ -1,4 +1,4 @@
-use crate::pdu::cursor::*;
+use crate::codec::Cursor;
 
 /// Functionality for decoding a PDU
 pub trait Decodable {
