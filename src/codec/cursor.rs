@@ -1,14 +1,15 @@
 use bitvec::prelude::*;
 
 pub struct Cursor<'a> {
-    slice: &'a BitSlice<u8>,
+    slice: &'a mut BitSlice<u8, Msb0>,
     position: usize
 }
 
 impl<'a> Cursor<'a> {
 
     /// Create a new Cursor instance
-    pub fn new(source: &'a BitSlice<u8>) -> Self {
+    pub fn new(source: &'a mut BitSlice<u8, Msb0>) -> Self {
+
         Self {
             slice: source,
             position: 0
@@ -18,6 +19,17 @@ impl<'a> Cursor<'a> {
     /// Get the number of remaining bits
     fn remaining(&self) -> usize {
         self.slice.len() - self.position
+    }
+
+    /// Skip the specified number of bits, upto the end of the slice
+    fn skip(&mut self, bits: usize) {
+
+        if self.position + bits > self.slice.len() {
+            self.position = self.slice.len();
+            return;
+        }
+
+        self.position += bits;
     }
 
     /// Read an integer, which may be up to 32 bits
@@ -33,7 +45,7 @@ impl<'a> Cursor<'a> {
         }
 
         // Read the bits & load into a u32
-        let val = self.slice[self.position .. (self.position + size)].load::<u32>();
+        let val = self.slice[self.position .. (self.position + size)].load_be::<u32>();
 
         // Advance the cursor
         self.position += size;
@@ -74,5 +86,39 @@ impl<'a> Cursor<'a> {
 
         result
     }
+
+    /// Write a boolean value to the cursor, returning the number of bits written
+    pub fn write_bool(&mut self, value: bool) -> usize {
+        self.slice.set(self.position, value);
+        self.position += 1;
+        1
+    }
+
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_reads_6_bit_int_correctly() {
+
+        let mut data: Vec<u8> = vec![
+            0b110000_11, 0b0000_0000
+        ];
+
+        // Create a cursor over the data
+        let mut cur = Cursor::new(data.as_mut_bits::<Msb0>());
+
+        let first_int = cur.read_int(6);
+        assert_eq!(first_int, 48);
+
+        // Read another
+        let second_int = cur.read_int(6);
+        assert_eq!(second_int, 48);
+
+    }
+
 
 }

@@ -13,10 +13,10 @@ enum NumberOfCommonSCCH {
 }
 
 struct RFParameters {
-    MsTxpwrMaxCell: u32,
-    RxlevAccessMin: u32,
-    AccessParameter: u32,
-    RadioDownlinkTimeout: u32
+    ms_txpwr_max_cell: u32,
+    rxlev_access_min: u32,
+    access_parameter: u32,
+    radio_downlink_timeout: u32
 }
 
 enum HyperframeOrCipherKeyFlag {
