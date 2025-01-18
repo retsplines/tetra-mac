@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 
 #[derive(Debug)]
 pub enum TimeslotAssigned {
@@ -7,8 +7,8 @@ pub enum TimeslotAssigned {
 }
 
 impl Decodable for TimeslotAssigned {
-    fn decode(cursor: &mut Cursor) -> Self {
-        match cursor.read_int(2) {
+    fn decode(reader: &mut Reader) -> Self {
+        match reader.read_int(2) {
             0b0000 => Self::AppropriateCCH,
             timeslots @ 0b0001..=0b1111 => Self::Timeslots(
                 timeslots & 0b0001 > 0,

@@ -1,6 +1,9 @@
-mod cursor;
+mod reader;
+mod builder;
 
-pub use cursor::Cursor;
+pub use reader::Reader;
+pub use builder::Builder;
+
 use crate::codec::Optional::{Absent, Present};
 
 #[derive(Debug)]
@@ -10,9 +13,9 @@ pub enum Optional<T> {
 }
 
 impl <T> Decodable for Optional<T> where T: Decodable {
-    fn decode(cursor: &mut Cursor) -> Self {
-        if cursor.read_bool() {
-            Present(T::decode(cursor))
+    fn decode(reader: &mut Reader) -> Self {
+        if reader.read_bool() {
+            Present(T::decode(reader))
         } else {
             Absent
         }
@@ -21,22 +24,22 @@ impl <T> Decodable for Optional<T> where T: Decodable {
 
 impl <T> Encodable for Optional<T> where T: Encodable {
     /// Encode the field, including a prefix O-bit
-    fn encode(&self, cursor: &mut Cursor) -> usize {
+    fn encode(&self, builder: &mut Builder) -> usize {
         match self {
-            Present(value) => value.encode(cursor),
-            Absent => cursor.write_bool(false)
+            Present(value) => value.encode(builder),
+            Absent => builder.write_bool(false)
         }
     }
 }
 
-/// Functionality for decoding a PDU from an existing Cursor
+/// Functionality for decoding a PDU from an existing reader
 pub trait Decodable {
-    fn decode(cursor: &mut Cursor) -> Self;
+    fn decode(reader: &mut Reader) -> Self;
 
 }
 
-/// Functionality for encoding a PDU into an existing Cursor
+/// Functionality for encoding a PDU into an existing reader
 pub trait Encodable {
-    fn encode(&self, cursor: &mut Cursor) -> usize;
+    fn encode(&self, builder: &mut Builder) -> usize;
 }
 

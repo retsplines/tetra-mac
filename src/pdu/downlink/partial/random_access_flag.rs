@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 
 #[derive(Debug)]
 pub enum RandomAccessFlag {
@@ -7,8 +7,8 @@ pub enum RandomAccessFlag {
 }
 
 impl Decodable for RandomAccessFlag {
-    fn decode(cursor: &mut Cursor) -> Self {
-        match cursor.read_int(1) {
+    fn decode(reader: &mut Reader) -> Self {
+        match reader.read_int(1) {
             0b0 => Self::Undefined,
             0b1 => Self::Acknowledged,
             unknown => panic!("unknown random access flag state {unknown}")

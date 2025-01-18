@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 
 #[derive(Debug)]
 pub enum PowerControl {
@@ -11,8 +11,8 @@ pub enum PowerControl {
 }
 
 impl Decodable for PowerControl {
-    fn decode(cursor: &mut Cursor) -> Self {
-        match cursor.read_int(4) {
+    fn decode(reader: &mut Reader) -> Self {
+        match reader.read_int(4) {
             0b0000 => PowerControl::NoChange,
             inc @ 0b0001 ..= 0b0110 => PowerControl::IncreaseBySteps(inc),
             0b0111 => PowerControl::MaximumPathDelayExceeded,

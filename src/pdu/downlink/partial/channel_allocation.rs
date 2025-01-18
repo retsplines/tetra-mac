@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 use super::{AllocationType, TimeslotAssigned};
 
 #[derive(Debug)]
@@ -16,10 +16,10 @@ pub struct ChannelAllocation {
 }
 
 impl Decodable for ChannelAllocation {
-    fn decode(cursor: &mut Cursor) -> Self {
+    fn decode(reader: &mut Reader) -> Self {
         ChannelAllocation {
-            allocation_type: num::FromPrimitive::from_u32(cursor.read_int(2)).unwrap(),
-            timeslot_assigned: TimeslotAssigned::decode(cursor)
+            allocation_type: num::FromPrimitive::from_u32(reader.read_int(2)).unwrap(),
+            timeslot_assigned: TimeslotAssigned::decode(reader)
         }
     }
 }

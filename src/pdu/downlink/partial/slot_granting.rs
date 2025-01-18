@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 use super::granting_delay::GrantingDelay;
 use super::capacity_allocation::CapacityAllocation;
 
@@ -9,10 +9,10 @@ pub struct SlotGranting {
 }
 
 impl Decodable for SlotGranting {
-    fn decode(cursor: &mut Cursor) -> Self {
+    fn decode(reader: &mut Reader) -> Self {
         SlotGranting {
-            capacity_allocation: CapacityAllocation::decode(cursor),
-            granting_delay: GrantingDelay::decode(cursor)
+            capacity_allocation: CapacityAllocation::decode(reader),
+            granting_delay: GrantingDelay::decode(reader)
         }
     }
 }

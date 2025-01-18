@@ -1,4 +1,4 @@
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 
 #[derive(Debug)]
 pub enum GrantingDelay {
@@ -9,8 +9,8 @@ pub enum GrantingDelay {
 }
 
 impl Decodable for GrantingDelay {
-    fn decode(cursor: &mut Cursor) -> Self {
-        match cursor.read_int(4) {
+    fn decode(reader: &mut Reader) -> Self {
+        match reader.read_int(4) {
             0b0000 => Self::AtNextOpportunity,
             after @ 0b0001 ..= 0b1101 => Self::After(after),
             0b1110 => Self::Frame18,

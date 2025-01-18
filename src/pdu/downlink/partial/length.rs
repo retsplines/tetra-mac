@@ -1,5 +1,5 @@
 use bitvec::macros::internal::funty::Fundamental;
-use crate::codec::{Cursor, Decodable};
+use crate::codec::{Reader, Decodable};
 
 #[derive(Debug)]
 pub enum Length {
@@ -11,8 +11,8 @@ pub enum Length {
 }
 
 impl Decodable for Length {
-    fn decode(cursor: &mut Cursor) -> Self {
-        let length_field = cursor.read_int(6);
+    fn decode(reader: &mut Reader) -> Self {
+        let length_field = reader.read_int(6);
         match length_field {
             0b000000 | 0b000001 => Self::Reserved,
             0b000010 => Self::NullPDU,

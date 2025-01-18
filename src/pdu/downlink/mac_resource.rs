@@ -1,6 +1,6 @@
 use bitvec::macros::internal::funty::Fundamental;
 use bitvec::prelude::*;
-use crate::codec::{Cursor, Decodable, Encodable, Optional};
+use crate::codec::{Reader, Decodable, Encodable, Optional};
 use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, RandomAccessFlag, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
 
@@ -20,41 +20,44 @@ pub struct MACResourcePDU {
 }
 
 impl Decodable for MACResourcePDU {
-    fn decode(cursor: &mut Cursor) -> Self {
+    fn decode(reader: &mut Reader) -> Self {
 
         // Decode & validate the PDU type
-        let pdu_type = DownlinkMACPDUType::decode(cursor);
+        let pdu_type = DownlinkMACPDUType::decode(reader);
         assert_eq!(pdu_type, DownlinkMACPDUType::MACResource);
 
         MACResourcePDU {
             pdu_type,
-            fill_bit_indication: cursor.read_bool(),
-            grant_is_on_current_channel: cursor.read_bool(),
-            encryption_mode: cursor.read_int(2),
-            random_access: RandomAccessFlag::decode(cursor),
-            length: Length::decode(cursor),
-            address: Address::decode(cursor),
-            power_control: Optional::decode(cursor),
-            slot_granting: Optional::decode(cursor),
-            channel_allocation: Optional::decode(cursor)
+            fill_bit_indication: reader.read_bool(),
+            grant_is_on_current_channel: reader.read_bool(),
+            encryption_mode: reader.read_int(2),
+            random_access: RandomAccessFlag::decode(reader),
+            length: Length::decode(reader),
+            address: Address::decode(reader),
+            power_control: Optional::decode(reader),
+            slot_granting: Optional::decode(reader),
+            channel_allocation: Optional::decode(reader)
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    
     use super::*;
+    use crate::Bits;
 
     #[test]
-    fn it_decodes_correctly() {
+    fn
+    it_decodes_correctly() {
 
-        let mut data: Vec<u8> = vec![
+        let data = Bits::from_vec(vec![
             0x20, 0x69, 0x00, 0x04, 0x02, 0x03, 0x48, 0x40,
             0x00, 0x00, 0x4e, 0xab, 0x10, 0x00, 0x10, 0x80
-        ];
+        ]);
 
-        // Create a cursor over the data
-        let mut cur = Cursor::new(data.as_mut_bits::<Msb0>());
+        // Create a reader over the data
+        let mut cur = Reader::new(&data);
 
         let pdu = MACResourcePDU::decode(&mut cur);
 

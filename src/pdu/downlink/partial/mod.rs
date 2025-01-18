@@ -27,3 +27,5 @@ mod power_control;
 mod random_access_flag;
 mod slot_granting;
 mod timeslot_assigned;
+mod offset;
+mod rf_parameters;
