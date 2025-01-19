@@ -16,11 +16,11 @@ enum OptionalField {
     ExtendedServicesBroadcast
 }
 
-struct SysinfoPDU {
+struct Sysinfo {
 
     main_carrier: u32,
     frequency_band: u32,
-    offset: Offset,
+    // offset: Offset,
     duplex_spacing: u32,
-    rf_parameters: RFParameters
+    // rf_parameters: RFParameters
 }

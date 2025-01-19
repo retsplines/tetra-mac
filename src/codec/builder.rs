@@ -34,9 +34,13 @@ impl Builder {
     }
 
     /// Write a boolean value to the reader, returning the number of bits written
-    pub fn write_bool(&mut self, value: bool) -> usize {
+    pub fn write_bool(&mut self, value: bool) {
         self.data.push(value);
-        1
+    }
+
+    /// Finish working with the builder, moving out the underlying bits
+    pub fn done(self) -> Bits {
+        self.data
     }
 }
 

@@ -4,7 +4,6 @@ use crate::codec::{Reader, Decodable, Encodable, Optional};
 use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, RandomAccessFlag, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
 
-
 #[derive(Debug)]
 pub struct MACResourcePDU {
     pdu_type: DownlinkMACPDUType,

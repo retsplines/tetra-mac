@@ -24,7 +24,7 @@ impl <T> Decodable for Optional<T> where T: Decodable {
 
 impl <T> Encodable for Optional<T> where T: Encodable {
     /// Encode the field, including a prefix O-bit
-    fn encode(&self, builder: &mut Builder) -> usize {
+    fn encode(&self, builder: &mut Builder) {
         match self {
             Present(value) => value.encode(builder),
             Absent => builder.write_bool(false)
@@ -40,6 +40,6 @@ pub trait Decodable {
 
 /// Functionality for encoding a PDU into an existing reader
 pub trait Encodable {
-    fn encode(&self, builder: &mut Builder) -> usize;
+    fn encode(&self, builder: &mut Builder);
 }
 

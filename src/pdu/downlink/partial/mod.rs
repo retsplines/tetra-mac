@@ -12,6 +12,8 @@ pub use self::power_control::PowerControl;
 pub use self::random_access_flag::RandomAccessFlag;
 pub use self::slot_granting::SlotGranting;
 pub use self::timeslot_assigned::TimeslotAssigned;
+pub use self::sharing_mode::SharingMode;
+pub use self::ts_reserved_frames::TSReservedFrames;
 
 mod address;
 mod allocation_type;
@@ -29,3 +31,5 @@ mod slot_granting;
 mod timeslot_assigned;
 mod offset;
 mod rf_parameters;
+mod sharing_mode;
+mod ts_reserved_frames;
