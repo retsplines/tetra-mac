@@ -1,7 +1,7 @@
 use bitvec::macros::internal::funty::Fundamental;
 use bitvec::prelude::*;
 use crate::codec::{Reader, Decodable, Encodable, Optional, Builder};
-use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, RandomAccessFlag, SlotGranting};
+use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
 
 #[derive(Debug)]
@@ -49,6 +49,9 @@ impl Encodable for MACResourcePDU {
         builder.write_bool(self.random_access_acknowledged);
         self.length.encode(builder);
         self.address.encode(builder);
+        // self.power_control.encode(builder);
+        // self.slot_granting.encode(builder);
+        // self.channel_allocation.encode(builder);
     }
 }
 

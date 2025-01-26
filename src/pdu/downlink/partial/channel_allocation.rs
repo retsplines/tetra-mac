@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable};
+use crate::codec::{Reader, Decodable, Encodable, Builder};
 use super::{AllocationType, TimeslotAssigned};
 
 #[derive(Debug)]
@@ -21,5 +21,12 @@ impl Decodable for ChannelAllocation {
             allocation_type: num::FromPrimitive::from_u32(reader.read_int(2)).unwrap(),
             timeslot_assigned: TimeslotAssigned::decode(reader)
         }
+    }
+}
+
+impl Encodable for ChannelAllocation {
+    fn encode(&self, builder: &mut Builder) {
+        // self.allocation_type.encode(builder);
+        // self.timeslot_assigned.encode(builder);
     }
 }
