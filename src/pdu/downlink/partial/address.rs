@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable};
+use crate::codec::{Reader, Decodable, Encodable, Builder};
 
 #[derive(Debug)]
 pub enum Address {
@@ -35,5 +35,11 @@ impl Decodable for Address {
             },
             unknown => panic!("unknown address type {unknown}")
         }
+    }
+}
+
+impl Encodable for Address {
+    fn encode(&self, builder: &mut Builder) {
+        todo!()
     }
 }

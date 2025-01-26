@@ -1,6 +1,6 @@
 use bitvec::macros::internal::funty::Fundamental;
 use bitvec::prelude::*;
-use crate::codec::{Reader, Decodable, Encodable, Optional};
+use crate::codec::{Reader, Decodable, Encodable, Optional, Builder};
 use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, RandomAccessFlag, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
 
@@ -10,7 +10,7 @@ pub struct MACResourcePDU {
     fill_bit_indication: bool,
     grant_is_on_current_channel: bool,
     encryption_mode: u32,
-    random_access: RandomAccessFlag,
+    random_access_acknowledged: bool,
     length: Length,
     address: Address,
     power_control: Optional<PowerControl>,
@@ -30,13 +30,25 @@ impl Decodable for MACResourcePDU {
             fill_bit_indication: reader.read_bool(),
             grant_is_on_current_channel: reader.read_bool(),
             encryption_mode: reader.read_int(2),
-            random_access: RandomAccessFlag::decode(reader),
+            random_access_acknowledged: reader.read_bool(),
             length: Length::decode(reader),
             address: Address::decode(reader),
             power_control: Optional::decode(reader),
             slot_granting: Optional::decode(reader),
             channel_allocation: Optional::decode(reader)
         }
+    }
+}
+
+impl Encodable for MACResourcePDU {
+    fn encode(&self, builder: &mut Builder) {
+
+        builder.write_bool(self.fill_bit_indication);
+        builder.write_bool(self.grant_is_on_current_channel);
+        builder.write_int(self.encryption_mode, 2);
+        builder.write_bool(self.random_access_acknowledged);
+        self.length.encode(builder);
+        self.address.encode(builder);
     }
 }
 
