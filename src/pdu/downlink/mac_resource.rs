@@ -43,15 +43,16 @@ impl Decodable for MACResourcePDU {
 impl Encodable for MACResourcePDU {
     fn encode(&self, builder: &mut Builder) {
 
+        DownlinkMACPDUType::MACResource.encode(builder);
         builder.write_bool(self.fill_bit_indication);
         builder.write_bool(self.grant_is_on_current_channel);
         builder.write_int(self.encryption_mode, 2);
         builder.write_bool(self.random_access_acknowledged);
         self.length.encode(builder);
         self.address.encode(builder);
-        // self.power_control.encode(builder);
-        // self.slot_granting.encode(builder);
-        // self.channel_allocation.encode(builder);
+        self.power_control.encode(builder);
+        self.slot_granting.encode(builder);
+        self.channel_allocation.encode(builder);
     }
 }
 
@@ -62,8 +63,7 @@ mod tests {
     use crate::Bits;
 
     #[test]
-    fn
-    it_decodes_correctly() {
+    fn it_decodes_correctly() {
 
         let data = Bits::from_vec(vec![
             0x20, 0x69, 0x00, 0x04, 0x02, 0x03, 0x48, 0x40,
@@ -85,6 +85,32 @@ mod tests {
         assert_eq!(pdu.grant_is_on_current_channel, false);
 
         println!("{:?}", pdu);
+
+    }
+
+    #[test]
+    fn it_encodes_correctly() {
+
+        let mac_resource = MACResourcePDU {
+            pdu_type: DownlinkMACPDUType::MACResource,
+            fill_bit_indication: true,
+            grant_is_on_current_channel: false,
+            encryption_mode: 0,
+            random_access_acknowledged: false,
+            length: Length::Octets(32),
+            address: Address::SSI {
+                address: 1026,
+            },
+            power_control: Optional::Absent,
+            slot_granting: Optional::Absent,
+            channel_allocation: Optional::Absent,
+        };
+
+        let mut builder = Builder::new();
+        mac_resource.encode(&mut builder);
+        let bits = builder.done();
+
+        dbg!(bits);
 
     }
 

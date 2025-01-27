@@ -1,26 +1,17 @@
-use num_derive::ToPrimitive;
+use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::ToPrimitive;
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Decodable, Encodable, SizedField};
 
 mod uplink;
 mod downlink;
 
-#[derive(Debug, Eq, PartialEq, ToPrimitive)]
+#[derive(Debug, Eq, PartialEq, ToPrimitive, FromPrimitive)]
 enum DownlinkMACPDUType {
     MACResource
 }
 
-impl Decodable for DownlinkMACPDUType {
-    fn decode(reader: &mut Reader) -> Self {
-        match reader.read_int(2) {
-            0b00 => DownlinkMACPDUType::MACResource,
-            unknown => panic!("Unknown downlink MAC PDU type {unknown}")
-        }
-    }
-}
-
-impl Encodable for DownlinkMACPDUType {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(self.to_u32().unwrap(), 2);
+impl SizedField for DownlinkMACPDUType {
+    fn size() -> usize {
+        2
     }
 }
