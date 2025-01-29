@@ -3,14 +3,14 @@ use crate::codec::{Reader, Decodable, Encodable, Builder};
 #[derive(Debug)]
 pub enum TimeslotAssigned {
     AppropriateCCH,
-    Timeslots(bool, bool, bool, bool)
+    Specific(Timeslots)
 }
 
 impl Decodable for TimeslotAssigned {
     fn decode(reader: &mut Reader) -> Self {
         match reader.read_int(2) {
             0b0000 => Self::AppropriateCCH,
-            timeslots @ 0b0001..=0b1111 => Self::Timeslots(
+            timeslots @ 0b0001..=0b1111 => Self::Specific(
                 timeslots & 0b0001 > 0,
                 timeslots & 0b0010 > 0,
                 timeslots & 0b0100 > 0,
@@ -25,7 +25,7 @@ impl Encodable for TimeslotAssigned {
     fn encode(&self, builder: &mut Builder) {
         builder.write_int(match self {
             Self::AppropriateCCH => 0b0000,
-            Self::Timeslots(ts1, ts2, ts3, ts4) =>
+            Self::Specific(ts1, ts2, ts3, ts4) =>
                 (*ts1 as u32) << 3 |
                 (*ts2 as u32) << 2 |
                 (*ts3 as u32) << 1 |

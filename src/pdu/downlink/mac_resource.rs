@@ -6,7 +6,6 @@ use crate::pdu::DownlinkMACPDUType;
 
 #[derive(Debug)]
 pub struct MACResourcePDU {
-    pdu_type: DownlinkMACPDUType,
     fill_bit_indication: bool,
     grant_is_on_current_channel: bool,
     encryption_mode: u32,
@@ -26,7 +25,6 @@ impl Decodable for MACResourcePDU {
         assert_eq!(pdu_type, DownlinkMACPDUType::MACResource);
 
         MACResourcePDU {
-            pdu_type,
             fill_bit_indication: reader.read_bool(),
             grant_is_on_current_channel: reader.read_bool(),
             encryption_mode: reader.read_int(2),
@@ -42,7 +40,6 @@ impl Decodable for MACResourcePDU {
 
 impl Encodable for MACResourcePDU {
     fn encode(&self, builder: &mut Builder) {
-
         DownlinkMACPDUType::MACResource.encode(builder);
         builder.write_bool(self.fill_bit_indication);
         builder.write_bool(self.grant_is_on_current_channel);
@@ -75,9 +72,6 @@ mod tests {
 
         let pdu = MACResourcePDU::decode(&mut cur);
 
-        // MAC-RESOURCE type PDU
-        assert_eq!(pdu.pdu_type, DownlinkMACPDUType::MACResource);
-
         // Fill bits are present
         assert_eq!(pdu.fill_bit_indication, true);
 
@@ -92,7 +86,6 @@ mod tests {
     fn it_encodes_correctly() {
 
         let mac_resource = MACResourcePDU {
-            pdu_type: DownlinkMACPDUType::MACResource,
             fill_bit_indication: true,
             grant_is_on_current_channel: false,
             encryption_mode: 0,
@@ -110,7 +103,9 @@ mod tests {
         mac_resource.encode(&mut builder);
         let bits = builder.done();
 
-        dbg!(bits);
+        assert_eq!(bits, bits![u8, Msb0;
+            0,0, 1, 0, 0,0, 0, 1,0,0,0,0,0, 0,0,1, 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0, 0, 0, 0
+        ]);
 
     }
 
