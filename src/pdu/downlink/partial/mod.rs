@@ -1,10 +1,8 @@
 pub use self::address::Address;
 pub use self::allocation_type::AllocationType;
-pub use self::capacity_allocation::CapacityAllocation;
 pub use self::channel_allocation::ChannelAllocation;
 pub use self::direction::Direction;
 pub use self::extended_carrier_numbering::ExtendedCarrierNumbering;
-pub use self::granting_delay::GrantingDelay;
 pub use self::length::Length;
 pub use self::monitoring_patterns::MonitoringPatterns;
 pub use self::power_control::PowerControl;
@@ -13,6 +11,7 @@ pub use self::timeslot_assigned::TimeslotAssigned;
 pub use self::sharing_mode::SharingMode;
 pub use self::ts_reserved_frames::TSReservedFrames;
 pub use self::offset::Offset;
+pub use self::timeslots::Timeslots;
 
 mod address;
 mod allocation_type;
