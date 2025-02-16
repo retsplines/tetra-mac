@@ -3,6 +3,7 @@
 mod pdu;
 mod codec;
 mod mac;
+mod tdma_time;
 
 use bitvec::prelude::*;
 use bitvec::prelude as bv;
