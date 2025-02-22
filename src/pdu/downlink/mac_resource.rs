@@ -6,15 +6,15 @@ use crate::pdu::DownlinkMACPDUType;
 
 #[derive(Debug)]
 pub struct MACResourcePDU {
-    fill_bit_indication: bool,
-    grant_is_on_current_channel: bool,
-    encryption_mode: u32,
-    random_access_acknowledged: bool,
-    length: Length,
-    address: Address,
-    power_control: Optional<PowerControl>,
-    slot_granting: Optional<SlotGranting>,
-    channel_allocation: Optional<ChannelAllocation>
+    pub fill_bit_indication: bool,
+    pub grant_is_on_current_channel: bool,
+    pub encryption_mode: u32,
+    pub random_access_acknowledged: bool,
+    pub length: Length,
+    pub address: Address,
+    pub power_control: Optional<PowerControl>,
+    pub slot_granting: Optional<SlotGranting>,
+    pub channel_allocation: Optional<ChannelAllocation>
 }
 
 impl Decodable for MACResourcePDU {

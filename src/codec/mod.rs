@@ -1,5 +1,6 @@
 mod reader;
 mod builder;
+mod fill_bits;
 
 pub use reader::Reader;
 pub use builder::Builder;

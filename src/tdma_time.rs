@@ -12,6 +12,7 @@ pub struct TDMATime {
     hyperframe: u32
 }
 
+/// Representation of the system
 impl TDMATime {
 
     fn as_slot_number(&self) -> u32 {
@@ -28,29 +29,34 @@ impl TDMATime {
         }
     }
 
+    /// Returns the 1-based slot number, between 1 and 4
     pub fn slot(&self) -> u32 {
         self.slot + 1
     }
 
+    /// Returns the 1-based frame number, between 1 and 18
     pub fn frame(&self) -> u32 {
         self.frame + 1
     }
 
+    /// Returns the 1-based mulitframe number, between 1 and 60
     pub fn multiframe(&self) -> u32 {
         self.multiframe + 1
     }
 
+    /// Returns the 1-based hyperframe number, between 1 and 65535
     pub fn hyperframe(&self) -> u32 {
         self.hyperframe + 1
     }
 
+    /// Returns whether the current frame is the Control Frame (frame 18)
     pub fn is_control_frame(&self) -> bool {
         self.frame == 17
     }
 
     fn from_slot_number(slot_number: u32) -> Self {
 
-        let hyperframe = slot_number / (60 * 18 * 4);
+        let hyperframe = (slot_number / (60 * 18 * 4)) % 65535;
         let slot_number = slot_number % (60 * 18 * 4);
         let multiframe = slot_number / (18 * 4);
         let slot_number = slot_number % (18 * 4);
@@ -84,12 +90,15 @@ mod test {
             hyperframe: 0
         };
 
-        assert_eq!(tdma.as_slot_number(), 3 + 2 * 4 + 1 * 18 * 4 + 0 * 60 * 18 * 4);
+        assert_eq!(
+            tdma.as_slot_number(),
+            3 + (2 * 4) + (18 * 4)
+        );
     }
 
     #[test]
     fn test_from_slot_number() {
-        let slot_number = 3 + 2 * 4 + 1 * 18 * 4 + 0 * 60 * 18 * 4;
+        let slot_number = 3 + (2 * 4) + (18 * 4);
         let tdma = TDMATime::from_slot_number(slot_number);
 
         assert_eq!(tdma.slot, 3);

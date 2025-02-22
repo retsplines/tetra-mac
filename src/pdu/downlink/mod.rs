@@ -5,3 +5,5 @@ mod sysinfo;
 mod sync;
 mod mac_end;
 mod mac_frag;
+
+pub use mac_resource::MACResourcePDU as MACResourcePDU;
