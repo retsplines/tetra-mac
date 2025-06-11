@@ -212,7 +212,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
 
         let access_assign = AccessAssign::NormalFrame(AccessAssignNormalFrame::DownlinkDefinedUplinkCommonAndAssigned {
             downlink_usage_marker: DownlinkUsageMarker::CommonControl,

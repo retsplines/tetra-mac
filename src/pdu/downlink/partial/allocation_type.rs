@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::codec::{Builder, Decodable, Encodable, SizedField};
+use crate::codec::SizedField;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum AllocationType {

@@ -1,6 +1,4 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::codec::{Decodable, Reader};
-
 #[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum SharingMode {
     ContinuousTransmission = 0b00,

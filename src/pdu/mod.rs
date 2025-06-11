@@ -1,6 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::ToPrimitive;
-use crate::codec::{Decodable, Encodable, SizedField};
+use crate::codec::SizedField;
 
 #[derive(Debug, Eq, PartialEq, ToPrimitive, FromPrimitive)]
 enum DownlinkMACPDUType {

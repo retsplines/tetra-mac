@@ -1,8 +1,7 @@
-use bitvec::macros::internal::funty::Fundamental;
-use bitvec::prelude::*;
 use crate::codec::{Reader, Decodable, Encodable, Optional, Builder};
 use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
+
 
 #[derive(Debug)]
 pub struct MACResourcePDU {
@@ -15,6 +14,22 @@ pub struct MACResourcePDU {
     pub power_control: Optional<PowerControl>,
     pub slot_granting: Optional<SlotGranting>,
     pub channel_allocation: Optional<ChannelAllocation>
+}
+
+impl MACResourcePDU {
+    pub fn null() -> Self {
+        MACResourcePDU {
+            fill_bit_indication: false,
+            grant_is_on_current_channel: false,
+            encryption_mode: 0,
+            random_access_acknowledged: false,
+            length: Length::Reserved,
+            address: Address::NullPDU,
+            power_control: Optional::Absent,
+            slot_granting: Optional::Absent,
+            channel_allocation: Optional::Absent,
+        }
+    }
 }
 
 impl Decodable for MACResourcePDU {
@@ -55,12 +70,13 @@ impl Encodable for MACResourcePDU {
 
 #[cfg(test)]
 mod tests {
-    
+
+    use bitvec::prelude::*;
     use super::*;
     use crate::Bits;
 
     #[test]
-    fn it_decodes_correctly() {
+    fn decodes() {
 
         let data = Bits::from_vec(vec![
             0x20, 0x69, 0x00, 0x04, 0x02, 0x03, 0x48, 0x40,
@@ -77,13 +93,10 @@ mod tests {
 
         // Grant not on current channel (because no granting element)
         assert_eq!(pdu.grant_is_on_current_channel, false);
-
-        println!("{:?}", pdu);
-
     }
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
 
         let mac_resource = MACResourcePDU {
             fill_bit_indication: true,

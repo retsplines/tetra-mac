@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::codec::{Builder, Encodable, SizedField};
 use crate::pdu::downlink::partial::{Offset, Timeslots};
 
-enum HyperframeOrCipherKey {
+pub(crate) enum HyperframeOrCipherKey {
     Hyperframe {
         hyperframe_number: u32
     },
@@ -36,7 +36,7 @@ impl Encodable for TSModeBitmap {
     }
 }
 
-enum Immediate {
+pub(crate) enum Immediate {
     AlwaysRandomise,
     AfterFrames(u32),
     Immediate
@@ -52,7 +52,7 @@ impl Encodable for Immediate {
     }
 }
 
-enum TimeslotPointer {
+pub(crate) enum TimeslotPointer {
     SameAsDownlink,
     InTimeslots(Timeslots)
 }
@@ -66,13 +66,13 @@ impl Encodable for TimeslotPointer {
     }
 }
 
-struct AccessCodeDefinition {
-    immediate: Immediate,
-    waiting_time_opportunities: u32,
-    number_of_attempts: u32,
-    frame_length_x4: bool,
-    timeslot: TimeslotPointer,
-    minimum_priority: u32
+pub(crate) struct AccessCodeDefinition {
+    pub(crate) immediate: Immediate,
+    pub(crate) waiting_time_opportunities: u32,
+    pub(crate) number_of_attempts: u32,
+    pub(crate) frame_length_x4: bool,
+    pub(crate) timeslot: TimeslotPointer,
+    pub(crate) minimum_priority: u32
 }
 
 impl Encodable for AccessCodeDefinition {
@@ -94,7 +94,7 @@ impl Encodable for ExtendedServicesBroadcast {
     }
 }
 
-enum OptionalField {
+pub enum OptionalField {
     TSModeEvenMultiframe(TSModeBitmap),
     TSModeOddMultiframe(TSModeBitmap),
     DefaultAccessCodeA(AccessCodeDefinition),
@@ -126,7 +126,7 @@ impl Encodable for OptionalField {
 
 
 #[derive(FromPrimitive, ToPrimitive)]
-enum NumberOfCommonSCCH {
+pub(crate) enum NumberOfCommonSCCH {
     None = 0b00,
     Timeslot2 = 0b01,
     Timeslot23 = 0b10,
@@ -139,11 +139,11 @@ impl SizedField for NumberOfCommonSCCH {
     }
 }
 
-struct RFParameters {
-    ms_txpwr_max_cell: u32,
-    rxlev_access_min: u32,
-    access_parameter: u32,
-    radio_downlink_timeout: u32
+pub(crate) struct RFParameters {
+    pub(crate) ms_txpwr_max_cell: u32,
+    pub(crate) rxlev_access_min: u32,
+    pub(crate) access_parameter: u32,
+    pub(crate) radio_downlink_timeout: u32
 }
 
 impl Encodable for RFParameters {
@@ -155,16 +155,16 @@ impl Encodable for RFParameters {
     }
 }
 
-struct Sysinfo {
-    main_carrier: u32,
-    frequency_band: u32,
-    offset: Offset,
-    duplex_spacing: u32,
-    reverse: bool,
-    number_of_common_scch: NumberOfCommonSCCH,
-    rf_parameters: RFParameters,
-    hyperframe_or_cipher_key: HyperframeOrCipherKey,
-    optional_field: OptionalField
+pub struct Sysinfo {
+    pub main_carrier: u32,
+    pub frequency_band: u32,
+    pub offset: Offset,
+    pub duplex_spacing: u32,
+    pub reverse: bool,
+    pub number_of_common_scch: NumberOfCommonSCCH,
+    pub rf_parameters: RFParameters,
+    pub hyperframe_or_cipher_key: HyperframeOrCipherKey,
+    pub optional_field: OptionalField
 }
 
 impl Encodable for Sysinfo {
@@ -186,7 +186,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
         let sysinfo = Sysinfo {
             main_carrier: 0x123,
             frequency_band: 0x1,

@@ -43,7 +43,7 @@ mod test {
     use crate::pdu::downlink::partial::TimeslotAssigned;
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
         let tsa = TimeslotAssigned::Specific((false, true, false, true));
         let mut builder = Builder::new();
         tsa.encode(&mut builder);

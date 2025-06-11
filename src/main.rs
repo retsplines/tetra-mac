@@ -1,11 +1,12 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 #[allow(unused_imports)]
 mod codec;
-mod upper;
+mod mac;
 mod tdma_time;
 mod burst;
 mod channels;
 mod pdu;
+mod mcch;
 
 use bitvec::prelude::*;
 use bitvec::prelude as bv;

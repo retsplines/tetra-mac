@@ -51,7 +51,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_writes_bool_correctly() {
+    fn writes_bool() {
 
         let mut builder = Builder::new();
 
@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn it_writes_int_correctly() {
+    fn writes_int() {
 
         let mut builder = Builder::new();
 

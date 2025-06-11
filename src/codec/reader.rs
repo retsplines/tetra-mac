@@ -64,7 +64,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_reads_6_bit_int_correctly() {
+    fn reads_6_bit_int() {
 
         let data: Bits = Bits::from_vec(vec![
             0b110000_11, 0b0000_0000

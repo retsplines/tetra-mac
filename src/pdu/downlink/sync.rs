@@ -3,15 +3,15 @@ use crate::pdu::downlink::partial::{SharingMode, TSReservedFrames};
 
 #[derive(Debug)]
 pub struct Sync {
-    system_code: u32,
-    colour_code: u32,
-    timeslot_number: u32,
-    frame_number: u32,
-    multiframe_number: u32,
-    sharing_mode: SharingMode,
-    ts_reserved_frames: TSReservedFrames,
-    u_plane_dtx: bool,
-    frame_18_extension: bool
+    pub system_code: u32,
+    pub colour_code: u32,
+    pub timeslot_number: u32,
+    pub frame_number: u32,
+    pub multiframe_number: u32,
+    pub sharing_mode: SharingMode,
+    pub ts_reserved_frames: TSReservedFrames,
+    pub u_plane_dtx: bool,
+    pub frame_18_extension: bool
 }
 
 impl Decodable for Sync {
@@ -54,14 +54,11 @@ impl Encodable for Sync {
 }
 
 mod tests {
-
-    use super::*;
-    use bitvec::prelude;
     use crate::Bits;
-    use crate::codec::Reader;
+    use super::*;
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
         
         let pdu = Sync {
             system_code: 0,
@@ -84,7 +81,7 @@ mod tests {
     }
 
     #[test]
-    fn it_decodes_correctly() {
+    fn decodes() {
 
         let data = Bits::from_vec(vec![
             0b0000_1111, 0b11_01_0001, 0b1_000111_0, 0b0_001_0_1_0_0

@@ -92,10 +92,9 @@ impl Encodable for Address {
 
 mod test {
     use super::*;
-    use crate::Bits;
 
     #[test]
-    fn it_encodes_correctly() {
+    fn encodes() {
         let address = Address::SSI { address: 0xFFFFFE };
         let mut builder = Builder::new();
         address.encode(&mut builder);
