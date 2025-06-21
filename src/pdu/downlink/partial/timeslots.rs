@@ -1,10 +1,10 @@
-use crate::codec::{Builder, Decodable, Encodable, Reader};
+use crate::codec::{Writer, Decodable, Encodable, Reader};
 
 pub type Timeslots = (bool, bool, bool, bool);
 
 impl Encodable for Timeslots {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(
             (self.0 as u32) << 3 |
             (self.1 as u32) << 2 |
             (self.2 as u32) << 1 |

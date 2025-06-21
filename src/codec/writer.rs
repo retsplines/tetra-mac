@@ -1,15 +1,15 @@
 use bitvec::prelude::*;
 use crate::Bits;
 
-/// Build a PDU sequentially
-pub struct Builder {
+/// Writes a PDU sequentially
+pub struct Writer {
     data: Bits
 }
 
-impl Builder {
+impl Writer {
 
-    /// Create a new Builder instance
-    /// The builder owns the underlying bits during construction
+    /// Create a new Writer instance
+    /// The writer owns the underlying bits during construction
     pub fn new() -> Self {
 
         Self {
@@ -17,7 +17,7 @@ impl Builder {
         }
     }
 
-    /// Write an integer of a defined size to the PDU
+    /// Write an integer of a defined size
     pub fn write_int(&mut self, value: u32, size: usize) {
 
         // Create a new bit vector sized to fit the new integer
@@ -33,12 +33,12 @@ impl Builder {
         self.data.append(&mut bv);
     }
 
-    /// Write a boolean value to the reader, returning the number of bits written
+    /// Write a boolean value, returning the number of bits written
     pub fn write_bool(&mut self, value: bool) {
         self.data.push(value);
     }
 
-    /// Finish working with the builder, moving out the underlying bits
+    /// Finish working with the writer, moving out the underlying bits
     pub fn done(self) -> Bits {
         self.data
     }
@@ -53,32 +53,32 @@ mod tests {
     #[test]
     fn writes_bool() {
 
-        let mut builder = Builder::new();
+        let mut writer = Writer::new();
 
         // True, then false, then true
-        builder.write_bool(true);
-        builder.write_bool(false);
-        builder.write_bool(true);
+        writer.write_bool(true);
+        writer.write_bool(false);
+        writer.write_bool(true);
 
         // Validate the bits are correct
-        assert_eq!(builder.data.as_bitslice(), bitvec![1, 0, 1]);
+        assert_eq!(writer.data.as_bitslice(), bitvec![1, 0, 1]);
 
         // Length should be exact
-        assert_eq!(builder.data.len(), 3);
+        assert_eq!(writer.data.len(), 3);
     }
 
     #[test]
     fn writes_int() {
 
-        let mut builder = Builder::new();
+        let mut writer = Writer::new();
 
         // Write integers
-        builder.write_int(16, 6);
-        builder.write_int(1023, 10);
+        writer.write_int(16, 6);
+        writer.write_int(1023, 10);
 
         // Length?
-        assert_eq!(builder.data.len(), 16);
-        assert_eq!(builder.data.as_raw_slice(), [0x43, 0xFF]);
+        assert_eq!(writer.data.len(), 16);
+        assert_eq!(writer.data.as_raw_slice(), [0x43, 0xFF]);
 
     }
 

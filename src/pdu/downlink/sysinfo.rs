@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::codec::{Builder, Encodable, SizedField};
+use crate::codec::{Writer, Encodable, SizedField};
 use crate::pdu::downlink::partial::{Offset, Timeslots};
 
 pub(crate) enum HyperframeOrCipherKey {
@@ -12,15 +12,15 @@ pub(crate) enum HyperframeOrCipherKey {
 }
 
 impl Encodable for HyperframeOrCipherKey {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
             HyperframeOrCipherKey::Hyperframe { hyperframe_number: hyperframe } => {
-                builder.write_bool(false);
-                builder.write_int(*hyperframe, 16);
+                writer.write_bool(false);
+                writer.write_int(*hyperframe, 16);
             },
             HyperframeOrCipherKey::CipherKey { cck_id_or_key_version_number: cck_id } => {
-                builder.write_bool(true);
-                builder.write_int(*cck_id, 16);
+                writer.write_bool(true);
+                writer.write_int(*cck_id, 16);
             }
         }
     }
@@ -29,9 +29,9 @@ impl Encodable for HyperframeOrCipherKey {
 type TSModeBitmap = [bool; 20];
 
 impl Encodable for TSModeBitmap {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         for bit in self.iter() {
-            builder.write_bool(*bit);
+            writer.write_bool(*bit);
         }
     }
 }
@@ -43,11 +43,11 @@ pub(crate) enum Immediate {
 }
 
 impl Encodable for Immediate {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
-            Immediate::AlwaysRandomise => builder.write_int(0b0000, 4),
-            Immediate::Immediate => builder.write_int(0b1111, 4),
-            Immediate::AfterFrames(after) => builder.write_int(*after, 4)
+            Immediate::AlwaysRandomise => writer.write_int(0b0000, 4),
+            Immediate::Immediate => writer.write_int(0b1111, 4),
+            Immediate::AfterFrames(after) => writer.write_int(*after, 4)
         }
     }
 }
@@ -58,10 +58,10 @@ pub(crate) enum TimeslotPointer {
 }
 
 impl Encodable for TimeslotPointer {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
-            TimeslotPointer::SameAsDownlink => builder.write_int(0b0000, 4),
-            TimeslotPointer::InTimeslots(timeslots) => timeslots.encode(builder)
+            TimeslotPointer::SameAsDownlink => writer.write_int(0b0000, 4),
+            TimeslotPointer::InTimeslots(timeslots) => timeslots.encode(writer)
         }
     }
 }
@@ -76,20 +76,20 @@ pub(crate) struct AccessCodeDefinition {
 }
 
 impl Encodable for AccessCodeDefinition {
-    fn encode(&self, builder: &mut Builder) {
-        self.immediate.encode(builder);
-        builder.write_int(self.waiting_time_opportunities, 4);
-        builder.write_int(self.number_of_attempts, 4);
-        builder.write_bool(self.frame_length_x4);
-        self.timeslot.encode(builder);
-        builder.write_int(self.minimum_priority, 3);
+    fn encode(&self, writer: &mut Writer) {
+        self.immediate.encode(writer);
+        writer.write_int(self.waiting_time_opportunities, 4);
+        writer.write_int(self.number_of_attempts, 4);
+        writer.write_bool(self.frame_length_x4);
+        self.timeslot.encode(writer);
+        writer.write_int(self.minimum_priority, 3);
     }
 }
 
-struct ExtendedServicesBroadcast { }
+pub(crate) struct ExtendedServicesBroadcast { }
 
 impl Encodable for ExtendedServicesBroadcast {
-    fn encode(&self, _builder: &mut Builder) {
+    fn encode(&self, _writer: &mut Writer) {
         unimplemented!("extended services broadcast is not yet supported");
     }
 }
@@ -102,23 +102,23 @@ pub enum OptionalField {
 }
 
 impl Encodable for OptionalField {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
             OptionalField::TSModeEvenMultiframe(bitmap) => {
-                builder.write_int(0b00, 2);
-                bitmap.encode(builder);
+                writer.write_int(0b00, 2);
+                bitmap.encode(writer);
             },
             OptionalField::TSModeOddMultiframe(bitmap) => {
-                builder.write_int(0b01, 2);
-                bitmap.encode(builder);
+                writer.write_int(0b01, 2);
+                bitmap.encode(writer);
             },
             OptionalField::DefaultAccessCodeA(access_code_definition) => {
-                builder.write_int(0b10, 2);
-                access_code_definition.encode(builder);
+                writer.write_int(0b10, 2);
+                access_code_definition.encode(writer);
             },
             OptionalField::ExtendedServicesBroadcast(extended_services_broadcast) => {
-                builder.write_int(0b11, 2);
-                extended_services_broadcast.encode(builder);
+                writer.write_int(0b11, 2);
+                extended_services_broadcast.encode(writer);
             }
         }
     }
@@ -147,11 +147,11 @@ pub(crate) struct RFParameters {
 }
 
 impl Encodable for RFParameters {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(self.ms_txpwr_max_cell, 3);
-        builder.write_int(self.rxlev_access_min, 4);
-        builder.write_int(self.access_parameter, 4);
-        builder.write_int(self.radio_downlink_timeout, 4);
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(self.ms_txpwr_max_cell, 3);
+        writer.write_int(self.rxlev_access_min, 4);
+        writer.write_int(self.access_parameter, 4);
+        writer.write_int(self.radio_downlink_timeout, 4);
     }
 }
 
@@ -168,16 +168,16 @@ pub struct Sysinfo {
 }
 
 impl Encodable for Sysinfo {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(self.main_carrier, 12);
-        builder.write_int(self.frequency_band, 4);
-        self.offset.encode(builder);
-        builder.write_int(self.duplex_spacing, 3);
-        builder.write_bool(self.reverse);
-        self.number_of_common_scch.encode(builder);
-        self.rf_parameters.encode(builder);
-        self.hyperframe_or_cipher_key.encode(builder);
-        self.optional_field.encode(builder);
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(self.main_carrier, 12);
+        writer.write_int(self.frequency_band, 4);
+        self.offset.encode(writer);
+        writer.write_int(self.duplex_spacing, 3);
+        writer.write_bool(self.reverse);
+        self.number_of_common_scch.encode(writer);
+        self.rf_parameters.encode(writer);
+        self.hyperframe_or_cipher_key.encode(writer);
+        self.optional_field.encode(writer);
     }
 }
 
@@ -213,9 +213,9 @@ mod test {
             })
         };
 
-        let mut builder = Builder::new();
-        sysinfo.encode(&mut builder);
-        let result = builder.done();
+        let mut writer = Writer::new();
+        sysinfo.encode(&mut writer);
+        let result = writer.done();
 
         dbg!(result);
 

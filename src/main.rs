@@ -7,12 +7,12 @@ mod burst;
 mod channels;
 mod pdu;
 mod mcch;
+mod dqpsk;
 
 use bitvec::prelude::*;
-use bitvec::prelude as bv;
 
 // Define a common type for bit storage
-type Bits = bv::BitVec<u8, bv::Msb0>;
+type Bits = BitVec<u8, Msb0>;
 
 fn main() {
 

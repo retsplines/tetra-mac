@@ -1,5 +1,5 @@
 use crate::Bits;
-use crate::codec::{Builder, Encodable};
+use crate::codec::{Writer, Encodable};
 use crate::tdma_time::TDMATime;
 use crate::pdu::downlink::*;
 
@@ -41,7 +41,9 @@ impl MAC {
 
     fn generate_null_sch_hd(&self) -> Bits {
 
-        let null_pdu = MACResourcePDU::null();
+        // let null_pdu = MACResourcePDU::null();
+        
+        todo!()
 
     }
 
@@ -91,7 +93,7 @@ impl MAC {
 
     fn generate_bnch(&self) -> Bits {
 
-        let mut builder = Builder::new();
+        let mut writer = Writer::new();
 
         let sysinfo_pdu = Sysinfo {
             main_carrier: 0,
@@ -119,13 +121,13 @@ impl MAC {
             }),
         };
 
-        sysinfo_pdu.encode(&mut builder);
-        builder.done()
+        sysinfo_pdu.encode(&mut writer);
+        writer.done()
     }
 
     fn generate_bsch(&self) -> Bits {
 
-        let mut builder = Builder::new();
+        let mut writer = Writer::new();
 
         let sync_pdu = Sync {
             system_code: 0,
@@ -139,8 +141,8 @@ impl MAC {
             frame_18_extension: false,
         };
 
-        sync_pdu.encode(&mut builder);
-        builder.done()
+        sync_pdu.encode(&mut writer);
+        writer.done()
     }
 }
 

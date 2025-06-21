@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 #[derive(Debug)]
 pub enum PowerControl {
@@ -25,8 +25,8 @@ impl Decodable for PowerControl {
 }
 
 impl Encodable for PowerControl {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             Self::NoChange => 0b0000,
             PowerControl::IncreaseBySteps(inc) => *inc,
             PowerControl::MaximumPathDelayExceeded => 0b0111,

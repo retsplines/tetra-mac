@@ -1,9 +1,9 @@
 mod reader;
-mod builder;
+mod writer;
 mod fill_bits;
 
 pub use reader::Reader;
-pub use builder::Builder;
+pub use writer::Writer;
 
 use crate::codec::Optional::{Absent, Present};
 
@@ -25,10 +25,10 @@ impl <T> Decodable for Optional<T> where T: Decodable {
 
 impl <T> Encodable for Optional<T> where T: Encodable {
     /// Encode the field, including a prefix O-bit
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
-            Present(value) => value.encode(builder),
-            Absent => builder.write_bool(false)
+            Present(value) => value.encode(writer),
+            Absent => writer.write_bool(false)
         }
     }
 }
@@ -40,7 +40,7 @@ pub trait Decodable {
 
 /// Functionality for encoding a PDU into an existing reader
 pub trait Encodable {
-    fn encode(&self, builder: &mut Builder);
+    fn encode(&self, writer: &mut Writer);
 }
 
 pub trait SizedField {
@@ -51,8 +51,8 @@ pub trait SizedField {
 // This deals with any enum fields that can be directly represented as an integer (i.e. have no
 // special encoding/decoding rules)
 impl <T> Encodable for T where T: num::ToPrimitive + SizedField {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(num::ToPrimitive::to_u32(self).unwrap(), Self::size());
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(num::ToPrimitive::to_u32(self).unwrap(), Self::size());
     }
 }
 

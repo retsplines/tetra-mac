@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 use super::granting_delay::GrantingDelay;
 use super::capacity_allocation::CapacityAllocation;
 
@@ -18,8 +18,8 @@ impl Decodable for SlotGranting {
 }
 
 impl Encodable for SlotGranting {
-    fn encode(&self, builder: &mut Builder) {
-        self.capacity_allocation.encode(builder);
-        self.granting_delay.encode(builder);
+    fn encode(&self, writer: &mut Writer) {
+        self.capacity_allocation.encode(writer);
+        self.granting_delay.encode(writer);
     }
 }

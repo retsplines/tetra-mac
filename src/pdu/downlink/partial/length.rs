@@ -1,5 +1,5 @@
 use bitvec::macros::internal::funty::Fundamental;
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 const LENGTH_SIZE: usize = 6;
 
@@ -28,8 +28,8 @@ impl Decodable for Length {
 }
 
 impl Encodable for Length {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             Self::Reserved => 0b000000,
             Self::NullPDU => 0b000010,
             Length::Octets(octets) => octets.as_u32(),

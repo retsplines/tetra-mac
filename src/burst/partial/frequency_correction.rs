@@ -1,7 +1,19 @@
-// Literal bitvec containing the frequency correction bits
-
 use bitvec::prelude::*;
+use crate::Bits;
 
-/// Frequency correction bits
-
-const A: &BitSlice = bits![0, 1, 0, 0, 1];
+/// Generates the frequency correction bits
+fn frequency_correction_bits() -> Bits {
+    Bits::from_bitslice(bits![
+        u8, Msb0;
+        1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1,
+    ])
+}

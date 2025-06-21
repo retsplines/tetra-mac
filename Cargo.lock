@@ -157,6 +157,7 @@ version = "0.1.0"
 dependencies = [
  "bitvec",
  "num",
+ "num-complex",
  "num-derive",
  "num-traits",
 ]

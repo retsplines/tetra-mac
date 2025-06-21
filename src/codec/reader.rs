@@ -21,6 +21,17 @@ impl<'a> Reader<'a> {
     fn remaining(&self) -> usize {
         self.data.len() - self.position
     }
+    
+    /// Skip a number of bits
+    pub fn skip(&mut self, size: usize) {
+
+        if size > self.remaining() {
+            panic!("not enough bits left to skip {size}, only {remaining} remaining", remaining = self.remaining())
+        }
+
+        // Advance the reader
+        self.position += size;
+    }
 
     /// Read an integer, which may be up to 32 bits
     pub fn read_int(&mut self, size: usize) -> u32 {

@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 #[derive(Debug)]
 pub enum GrantingDelay {
@@ -21,8 +21,8 @@ impl Decodable for GrantingDelay {
 }
 
 impl Encodable for GrantingDelay {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             Self::AtNextOpportunity => 0b0000,
             Self::Frame18 => 0b1110,
             Self::WaitForAnotherMessage => 0b1111,

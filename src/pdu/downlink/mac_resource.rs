@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Optional, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Optional, Writer};
 use crate::pdu::downlink::partial::{Address, ChannelAllocation, Length, PowerControl, SlotGranting};
 use crate::pdu::DownlinkMACPDUType;
 
@@ -54,17 +54,17 @@ impl Decodable for MACResourcePDU {
 }
 
 impl Encodable for MACResourcePDU {
-    fn encode(&self, builder: &mut Builder) {
-        DownlinkMACPDUType::MACResource.encode(builder);
-        builder.write_bool(self.fill_bit_indication);
-        builder.write_bool(self.grant_is_on_current_channel);
-        builder.write_int(self.encryption_mode, 2);
-        builder.write_bool(self.random_access_acknowledged);
-        self.length.encode(builder);
-        self.address.encode(builder);
-        self.power_control.encode(builder);
-        self.slot_granting.encode(builder);
-        self.channel_allocation.encode(builder);
+    fn encode(&self, writer: &mut Writer) {
+        DownlinkMACPDUType::MACResource.encode(writer);
+        writer.write_bool(self.fill_bit_indication);
+        writer.write_bool(self.grant_is_on_current_channel);
+        writer.write_int(self.encryption_mode, 2);
+        writer.write_bool(self.random_access_acknowledged);
+        self.length.encode(writer);
+        self.address.encode(writer);
+        self.power_control.encode(writer);
+        self.slot_granting.encode(writer);
+        self.channel_allocation.encode(writer);
     }
 }
 
@@ -112,9 +112,9 @@ mod tests {
             channel_allocation: Optional::Absent,
         };
 
-        let mut builder = Builder::new();
-        mac_resource.encode(&mut builder);
-        let bits = builder.done();
+        let mut writer = Writer::new();
+        mac_resource.encode(&mut writer);
+        let bits = writer.done();
 
         assert_eq!(bits, bits![u8, Msb0;
             0,0, 1, 0, 0,0, 0, 1,0,0,0,0,0, 0,0,1, 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0, 0, 0, 0

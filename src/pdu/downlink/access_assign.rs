@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::codec::{Builder, Encodable, SizedField};
+use crate::codec::{Writer, Encodable, SizedField};
 
 #[derive(FromPrimitive, ToPrimitive)]
 enum AccessCode {
@@ -47,9 +47,9 @@ struct AccessField {
 }
 
 impl Encodable for AccessField {
-    fn encode(&self, builder: &mut Builder) {
-        self.access_code.encode(builder);
-        self.base_frame_length.encode(builder);
+    fn encode(&self, writer: &mut Writer) {
+        self.access_code.encode(writer);
+        self.base_frame_length.encode(writer);
     }
 }
 
@@ -62,8 +62,8 @@ enum DownlinkUsageMarker {
 }
 
 impl Encodable for DownlinkUsageMarker {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             DownlinkUsageMarker::Reserved => panic!("the UMr usage marker is reserved"),
             DownlinkUsageMarker::CommonControl => 0b000010,
             DownlinkUsageMarker::AssignedControl => 0b000001,
@@ -84,8 +84,8 @@ enum UplinkUsageMarker {
 }
 
 impl Encodable for UplinkUsageMarker {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             UplinkUsageMarker::Unallocated => 0b000000,
             UplinkUsageMarker::Traffic(traffic_um) => {
                 if *traffic_um <= 0b000011 {
@@ -118,27 +118,27 @@ enum AccessAssignNormalFrame {
 }
 
 impl Encodable for AccessAssignNormalFrame {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
             AccessAssignNormalFrame::DownlinkCommonUplinkCommon { access_field_1, access_field_2} => {
-                builder.write_int(0b00, 2);
-                access_field_1.encode(builder);
-                access_field_2.encode(builder);
+                writer.write_int(0b00, 2);
+                access_field_1.encode(writer);
+                access_field_2.encode(writer);
             },
             AccessAssignNormalFrame::DownlinkDefinedUplinkCommonAndAssigned { downlink_usage_marker, access_field } => {
-                builder.write_int(0b01, 2);
-                downlink_usage_marker.encode(builder);
-                access_field.encode(builder);
+                writer.write_int(0b01, 2);
+                downlink_usage_marker.encode(writer);
+                access_field.encode(writer);
             },
             AccessAssignNormalFrame::DownlinkDefinedUplinkAssignedOnly { downlink_usage_marker, access_field } => {
-                builder.write_int(0b10, 2);
-                downlink_usage_marker.encode(builder);
-                access_field.encode(builder);
+                writer.write_int(0b10, 2);
+                downlink_usage_marker.encode(writer);
+                access_field.encode(writer);
             },
             AccessAssignNormalFrame::DownlinkDefinedUplinkDefined { downlink_usage_marker, uplink_usage_marker } => {
-                builder.write_int(0b11, 2);
-                downlink_usage_marker.encode(builder);
-                uplink_usage_marker.encode(builder);
+                writer.write_int(0b11, 2);
+                downlink_usage_marker.encode(writer);
+                uplink_usage_marker.encode(writer);
             }
         }
     }
@@ -166,27 +166,27 @@ enum AccessAssignControlFrame {
 }
 
 impl Encodable for AccessAssignControlFrame {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
             AccessAssignControlFrame::UplinkCommonOnly { access_field_1, access_field_2} => {
-                builder.write_int(0b00, 2);
-                access_field_1.encode(builder);
-                access_field_2.encode(builder);
+                writer.write_int(0b00, 2);
+                access_field_1.encode(writer);
+                access_field_2.encode(writer);
             },
             AccessAssignControlFrame::UplinkCommonAndAssigned { access_field_1, access_field_2 } => {
-                builder.write_int(0b01, 2);
-                access_field_1.encode(builder);
-                access_field_2.encode(builder);
+                writer.write_int(0b01, 2);
+                access_field_1.encode(writer);
+                access_field_2.encode(writer);
             },
             AccessAssignControlFrame::UplinkAssignedOnly { access_field_1, access_field_2 } => {
-                builder.write_int(0b10, 2);
-                access_field_1.encode(builder);
-                access_field_2.encode(builder);
+                writer.write_int(0b10, 2);
+                access_field_1.encode(writer);
+                access_field_2.encode(writer);
             },
             AccessAssignControlFrame::UplinkCommonAndAssignedTraffic { access_field, uplink_usage_marker } => {
-                builder.write_int(0b11, 2);
-                access_field.encode(builder);
-                uplink_usage_marker.encode(builder);
+                writer.write_int(0b11, 2);
+                access_field.encode(writer);
+                uplink_usage_marker.encode(writer);
             }
         }
     }
@@ -198,10 +198,10 @@ enum AccessAssign {
 }
 
 impl Encodable for AccessAssign {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
         match self {
-            AccessAssign::NormalFrame(access_assign) => access_assign.encode(builder),
-            AccessAssign::ControlFrame(access_assign) => access_assign.encode(builder)
+            AccessAssign::NormalFrame(access_assign) => access_assign.encode(writer),
+            AccessAssign::ControlFrame(access_assign) => access_assign.encode(writer)
         }
     }
 }
@@ -222,9 +222,9 @@ mod test {
             },
         });
 
-        let mut builder = Builder::new();
-        access_assign.encode(&mut builder);
-        let bits = builder.done();
+        let mut writer = Writer::new();
+        access_assign.encode(&mut writer);
+        let bits = writer.done();
 
         assert_eq!(bits, bits![u8, Msb0;
             0,1,  0,0,0,0,1,0,  0,0,   0,1,1,0

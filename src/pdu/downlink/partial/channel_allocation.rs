@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 use super::{AllocationType, Direction, ExtendedCarrierNumbering, MonitoringPatterns, TimeslotAssigned};
 
 #[derive(Debug)]
@@ -33,9 +33,9 @@ impl Decodable for ChannelAllocation {
 }
 
 impl Encodable for ChannelAllocation {
-    fn encode(&self, builder: &mut Builder) {
-        self.allocation_type.encode(builder);
-        self.timeslot_assigned.encode(builder);
-        self.direction.encode(builder);
+    fn encode(&self, writer: &mut Writer) {
+        self.allocation_type.encode(writer);
+        self.timeslot_assigned.encode(writer);
+        self.direction.encode(writer);
     }
 }

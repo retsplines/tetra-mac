@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 #[derive(Debug)]
 pub enum CapacityAllocation {
@@ -18,8 +18,8 @@ impl Decodable for CapacityAllocation {
 }
 
 impl Encodable for CapacityAllocation {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             Self::FirstSubslot => 0b0000,
             Self::SecondSubslot => 0b1111,
             Self::Slots(slots) => *slots

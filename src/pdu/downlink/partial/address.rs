@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 #[derive(Debug)]
 pub enum Address {
@@ -54,37 +54,37 @@ impl Decodable for Address {
 }
 
 impl Encodable for Address {
-    fn encode(&self, builder: &mut Builder) {
+    fn encode(&self, writer: &mut Writer) {
 
         // Write the type
-        builder.write_int(self.get_type(), 3);
+        writer.write_int(self.get_type(), 3);
 
         // Write the content
         match self {
             Self::NullPDU => (),
             Self::SSI { address } => {
-                builder.write_int(*address, 24);
+                writer.write_int(*address, 24);
             },
             Self::EventLabel { event_label } => {
-                builder.write_int(*event_label, 10);
+                writer.write_int(*event_label, 10);
             },
             Self::USSI { ussi } => {
-                builder.write_int(*ussi, 24);
+                writer.write_int(*ussi, 24);
             },
             Self::SMI { smi } => {
-                builder.write_int(*smi, 24);
+                writer.write_int(*smi, 24);
             },
             Self::SSIPlusEventLabel { ssi, event_label } => {
-                builder.write_int(*ssi, 24);
-                builder.write_int(*event_label, 10);
+                writer.write_int(*ssi, 24);
+                writer.write_int(*event_label, 10);
             },
             Self::SSIPlusUsageMarker { ssi, usage_marker } => {
-                builder.write_int(*ssi, 24);
-                builder.write_int(*usage_marker, 10);
+                writer.write_int(*ssi, 24);
+                writer.write_int(*usage_marker, 10);
             },
             Self::SMIPlusEventLabel { smi, event_label } => {
-                builder.write_int(*smi, 24);
-                builder.write_int(*event_label, 10);
+                writer.write_int(*smi, 24);
+                writer.write_int(*event_label, 10);
             }
         }
     }
@@ -96,9 +96,9 @@ mod test {
     #[test]
     fn encodes() {
         let address = Address::SSI { address: 0xFFFFFE };
-        let mut builder = Builder::new();
-        address.encode(&mut builder);
-        let bits = builder.done();
+        let mut writer = Writer::new();
+        address.encode(&mut writer);
+        let bits = writer.done();
         dbg!(bits);
     }
 

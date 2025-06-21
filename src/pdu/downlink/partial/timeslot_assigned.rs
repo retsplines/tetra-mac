@@ -1,4 +1,4 @@
-use crate::codec::{Reader, Decodable, Encodable, Builder};
+use crate::codec::{Reader, Decodable, Encodable, Writer};
 use crate::pdu::downlink::partial::Timeslots;
 
 #[derive(Debug)]
@@ -23,8 +23,8 @@ impl Decodable for TimeslotAssigned {
 }
 
 impl Encodable for TimeslotAssigned {
-    fn encode(&self, builder: &mut Builder) {
-        builder.write_int(match self {
+    fn encode(&self, writer: &mut Writer) {
+        writer.write_int(match self {
             Self::AppropriateCCH => 0b0000,
             Self::Specific(timeslots) =>
                 (timeslots.0 as u32) << 3 |
@@ -39,14 +39,14 @@ mod test {
 
     use bitvec::{bits};
     use bitvec::order::Msb0;
-    use crate::codec::{Builder, Encodable};
+    use crate::codec::{Writer, Encodable};
     use crate::pdu::downlink::partial::TimeslotAssigned;
 
     #[test]
     fn encodes() {
         let tsa = TimeslotAssigned::Specific((false, true, false, true));
-        let mut builder = Builder::new();
-        tsa.encode(&mut builder);
-        assert_eq!(builder.done(), bits![u8, Msb0; 0, 1, 0, 1]);
+        let mut writer = Writer::new();
+        tsa.encode(&mut writer);
+        assert_eq!(writer.done(), bits![u8, Msb0; 0, 1, 0, 1]);
     }
 }
