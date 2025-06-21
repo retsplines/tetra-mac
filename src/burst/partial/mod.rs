@@ -1,4 +1,4 @@
 mod tail_bits;
-mod training_sequence;
-mod frequency_correction;
-mod phase_adjustment;
+pub mod training_sequence;
+pub mod frequency_correction;
+pub mod phase_adjustment;

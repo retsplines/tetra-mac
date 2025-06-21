@@ -1,5 +1,7 @@
 use crate::Bits;
 
+const 
+
 /// Compute the phase change for a sequence of bits.
 fn phase_change_for_bits(for_bits: &Bits) -> i32 {
 
@@ -41,7 +43,7 @@ pub fn phase_adjustment_bits(for_bits: &Bits) -> (bool, bool) {
     if for_bits.len() % 2 != 0 {
         panic!("phase adjustment not possible on odd-length bit sequences, got {} bits", for_bits.len());
     }
-    
+
     // Phase adjustment is only possible on odd *symbol* sequences
     if for_bits.len() % 4 == 0 {
         panic!("phase adjustment not possible on even-length symbol sequences, got {} bits", for_bits.len());
@@ -91,6 +93,6 @@ mod tests {
         let bits = Bits::from_bitslice(bits![u8, Msb0; 0, 1, 0, 0, 1, 1, 0, 1]);
         phase_adjustment_bits(&bits);
     }
-    
+
 
 }
