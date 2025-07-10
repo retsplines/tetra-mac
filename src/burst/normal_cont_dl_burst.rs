@@ -6,6 +6,7 @@ use crate::burst::partial::training_sequence::{
     training_sequence_normal_3_bits
 };
 use crate::burst::partial::phase_adjustment;
+use crate::burst::partial::phase_adjustment::{extract_sn_range_bits, PHASE_ADJUSTMENT_SYMBOL_RANGE_HA, PHASE_ADJUSTMENT_SYMBOL_RANGE_HB};
 
 /// Builds the normal continuous downlink burst
 fn build_burst_normal_cont_dl(
@@ -67,10 +68,21 @@ fn build_burst_normal_cont_dl(
     burst.extend(&training_sequence_normal_3_bits()[0..10]);
 
     // Calculate the phase adjustment fields
+    // TF1's PA bits are defined by "HA"
     let tf1_pa_bits = phase_adjustment_bits(
-        
-    )
+        &extract_sn_range_bits(&burst, PHASE_ADJUSTMENT_SYMBOL_RANGE_HA.0, PHASE_ADJUSTMENT_SYMBOL_RANGE_HA.1)
+    );
 
+    // TF2's PA bits are defined by "HB"
+    let tf2_pa_bits = phase_adjustment_bits(
+        &extract_sn_range_bits(&burst, PHASE_ADJUSTMENT_SYMBOL_RANGE_HB.0, PHASE_ADJUSTMENT_SYMBOL_RANGE_HB.1)
+    );
+    
+    log::info!("computed TF1 PA = {}{}", tf2_pa_bits[0], tf2_pa_bits[1]);
+
+    // Insert the TF PA bits into the structure
+    burst.splice(tf1_pa_ref ..tf1_pa_ref + 2, tf1_pa_bits);
+    burst.splice(tf2_pa_ref  .. tf2_pa_ref + 2, tf2_pa_bits);
 
     burst
 }
@@ -81,7 +93,6 @@ mod tests {
 
     use super::*;
     use crate::Bits;
-    use bitvec::prelude::*;
 
     #[test]
     fn empty_burst_is_correct() {
@@ -93,7 +104,7 @@ mod tests {
             false
         );
 
-        print!("burst {}", burst);
+        print!("burst {burst}");
 
     }
 

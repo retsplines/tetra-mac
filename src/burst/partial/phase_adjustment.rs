@@ -1,12 +1,34 @@
+use bitvec::slice::BitSlice;
 use crate::Bits;
 
-const 
+/// Define the boundary positions for phase sum calculations
+/// Note that these are symbol numbers (SNs), not bit numbers (BNs)
+/// EN 300 392-2 § 9.4.4.3.6 Table 9.15
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HA: (usize, usize) = (8, 122);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HB: (usize, usize) = (123, 249);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HC: (usize, usize) = (8, 108);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HD: (usize, usize) = (109, 249);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HE: (usize, usize) = (112, 230);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HF: (usize, usize) = (1, 111);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HG: (usize, usize) = (3, 117);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HH: (usize, usize) = (118, 244);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HI: (usize, usize) = (3, 103);
+pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HJ: (usize, usize) = (104, 244);
 
-/// Compute the phase change for a sequence of bits.
-fn phase_change_for_bits(for_bits: &Bits) -> i32 {
+/// Extract a range of bits based on a symbol number range
+/// NOTE that it assumed start_sn & end_sn are 1-based as per EN 300 392
+pub(crate) fn extract_sn_range_bits(bits: &Bits, start_sn: usize, end_sn: usize) -> Bits
+{
+    Bits::from_bitslice(&bits[(start_sn - 1) * 2 .. end_sn * 2])
+}
 
-    if for_bits.len() % 2 == 0 {
-        panic!("phase_change_for_bits requires an odd number of bits, got {}", for_bits.len());
+/// Compute the phase change in multiples of π/4 for a sequence of bits.
+fn phase_change_for_bits<O ,T>(for_bits: &BitSlice<T, O>) -> i32 where
+    O: bitvec::order::BitOrder,
+    T: bitvec::store::BitStore
+{
+    if for_bits.len() % 2 != 0 {
+        panic!("phase_change_for_bits requires an even number of bits, got {}", for_bits.len());
     }
 
     let mut phase_change = 0;
@@ -24,7 +46,7 @@ fn phase_change_for_bits(for_bits: &Bits) -> i32 {
 
     }
 
-    phase_change
+    phase_change % 8
 }
 
 /// Calculates the phase adjustment bits within burst structures.
@@ -37,7 +59,10 @@ fn phase_change_for_bits(for_bits: &Bits) -> i32 {
 ///
 /// For example if a defined sequence of symbols has a total phase change of +5 π/4 the bits must
 /// generate a phase change of +3 π/4 to leave a 0 phase change.
-pub fn phase_adjustment_bits(for_bits: &Bits) -> (bool, bool) {
+pub fn phase_adjustment_bits<O, T>(for_bits: &BitSlice<T, O>) -> [bool; 2] where
+    T: bitvec::store::BitStore,
+    O: bitvec::order::BitOrder
+{
 
     // Phase adjustment not possible on odd-length bit sequences
     if for_bits.len() % 2 != 0 {
@@ -65,11 +90,11 @@ pub fn phase_adjustment_bits(for_bits: &Bits) -> (bool, bool) {
 
     // Convert the phase shift to bits
     match phase_shift {
-        3 => (false, true),  // +3 π/4
-        1 => (false, false), // +1 π/4
-        -1 => (true, false), // -1 π/4
-        -3 => (true, true),  // -3 π/4
-        _ => panic!("not possible to produce phase adjustment for correction: {}", phase_shift),
+        3 => [false, true],  // +3 π/4
+        1 => [false, false], // +1 π/4
+        -1 => [true, false], // -1 π/4
+        -3 => [true, true],  // -3 π/4
+        _ => panic!("not possible to produce phase adjustment for correction: {phase_shift}"),
     }
 }
 
@@ -77,22 +102,67 @@ pub fn phase_adjustment_bits(for_bits: &Bits) -> (bool, bool) {
 mod tests {
 
     use super::*;
-    use crate::Bits;
     use bitvec::prelude::*;
 
     #[test]
     #[should_panic]
     fn calculate_phase_rejects_odd_length_bits() {
-        let bits = Bits::from_bitslice(bits![u8, Msb0; 0, 1, 0]);
-        phase_change_for_bits(&bits);
+        let bits = bits![0, 1, 0];
+        phase_change_for_bits(bits);
     }
 
     #[test]
     #[should_panic]
     fn adjustment_calculation_rejects_even_length_symbols() {
-        let bits = Bits::from_bitslice(bits![u8, Msb0; 0, 1, 0, 0, 1, 1, 0, 1]);
-        phase_adjustment_bits(&bits);
+        let bits = bits![0, 1, 0, 0, 1, 1, 0, 1];
+        phase_adjustment_bits(bits);
     }
 
+    #[test]
+    fn calculates_total_correctly() {
+
+        // Simple, 00 advances 1/4π
+        assert_eq!(phase_change_for_bits(bits![0, 0, 0, 0, 0, 0, 0, 0]), 4);
+
+        // Wrapping
+        assert_eq!(phase_change_for_bits(bits![
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0
+        ]), 0);
+
+        assert_eq!(phase_change_for_bits(bits![
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1
+        ]), 3);
+
+        // 10 advances -1/4π
+        assert_eq!(phase_change_for_bits(bits![0, 0, 0, 0, 0, 0, 1, 0]), 2);
+
+        // 01 advances 3/4π
+        assert_eq!(phase_change_for_bits(bits![0, 0, 0, 0, 0, 0, 0, 1]), 6);
+
+        // 11 advances -3/4π
+        assert_eq!(phase_change_for_bits(bits![0, 0, 0, 0, 0, 0, 1, 1]), 0);
+
+        // Example from "Digital Mobile Communications and the TETRA System" pg 218
+        assert_eq!(phase_change_for_bits(bits![0, 1, 1, 0, 0, 1, 0, 0]), 6);
+    }
+    
+    #[test]
+    fn generates_correct_bits()
+    {
+        // Calculated by-hand, 7 zero symbols (+7pi/4) should need one more to correct phase to 0
+        assert_eq!(
+            phase_adjustment_bits(bits![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            [false, false]
+        );
+        
+        // Wrapping around to +3/-3 (+5π/4)
+        assert_eq!(
+            phase_adjustment_bits(bits![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            [false, true]
+        );
+    }
 
 }
