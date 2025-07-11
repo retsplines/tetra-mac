@@ -16,6 +16,8 @@ type Bits = BitVec<u8, Msb0>;
 
 fn main() {
 
+    env_logger::init();
+    
     let mut bits= bitvec![u8, Msb0; 0; 16];
 
     // Set an arbitrary sized int in the first 8 bits

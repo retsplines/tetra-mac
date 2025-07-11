@@ -41,7 +41,7 @@ pub(crate) fn training_sequence_extended_bits() -> Bits {
         0, 0, 0, 0, 1, 1
     ])
 }
-/// Generates the synchronisation training sequence (EN 300 392-2 9.4.4.3.4)
+/// Generates the synchronisation training sequence y1-38 (EN 300 392-2 9.4.4.3.4)
 pub(crate) fn training_sequence_sync_bits() -> Bits {
     Bits::from_bitslice(bits![
         u8, Msb0;

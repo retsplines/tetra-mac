@@ -19,7 +19,9 @@ pub const PHASE_ADJUSTMENT_SYMBOL_RANGE_HJ: (usize, usize) = (104, 244);
 /// NOTE that it assumed start_sn & end_sn are 1-based as per EN 300 392
 pub(crate) fn extract_sn_range_bits(bits: &Bits, start_sn: usize, end_sn: usize) -> Bits
 {
-    Bits::from_bitslice(&bits[(start_sn - 1) * 2 .. end_sn * 2])
+    let start_bn = (start_sn - 1) * 2;
+    let end_bn = (end_sn) * 2;
+    Bits::from_bitslice(&bits[start_bn .. end_bn])
 }
 
 /// Compute the phase change in multiples of π/4 for a sequence of bits.
@@ -70,7 +72,7 @@ pub fn phase_adjustment_bits<O, T>(for_bits: &BitSlice<T, O>) -> [bool; 2] where
     }
 
     // Phase adjustment is only possible on odd *symbol* sequences
-    if for_bits.len() % 4 == 0 {
+    if for_bits.len() / 2 % 2 == 0 {
         panic!("phase adjustment not possible on even-length symbol sequences, got {} bits", for_bits.len());
     }
 
@@ -148,7 +150,7 @@ mod tests {
         // Example from "Digital Mobile Communications and the TETRA System" pg 218
         assert_eq!(phase_change_for_bits(bits![0, 1, 1, 0, 0, 1, 0, 0]), 6);
     }
-    
+
     #[test]
     fn generates_correct_bits()
     {
@@ -157,7 +159,7 @@ mod tests {
             phase_adjustment_bits(bits![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
             [false, false]
         );
-        
+
         // Wrapping around to +3/-3 (+5π/4)
         assert_eq!(
             phase_adjustment_bits(bits![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
