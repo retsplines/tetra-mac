@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use crate::Bits;
 use crate::codec::{Writer, Encodable, SizedField};
 use crate::pdu::downlink::partial::{Offset, Timeslots};
 
@@ -164,7 +165,8 @@ pub struct Sysinfo {
     pub number_of_common_scch: NumberOfCommonSCCH,
     pub rf_parameters: RFParameters,
     pub hyperframe_or_cipher_key: HyperframeOrCipherKey,
-    pub optional_field: OptionalField
+    pub optional_field: OptionalField,
+    pub tm_sdu_bits: Bits
 }
 
 impl Encodable for Sysinfo {
@@ -187,6 +189,7 @@ mod test {
 
     #[test]
     fn encodes() {
+
         let sysinfo = Sysinfo {
             main_carrier: 0x123,
             frequency_band: 0x1,
@@ -210,16 +213,12 @@ mod test {
                 frame_length_x4: false,
                 timeslot: TimeslotPointer::SameAsDownlink,
                 minimum_priority: 0,
-            })
+            }),
+            tm_sdu_bits: Bits::repeat(false, 42)
         };
 
         let mut writer = Writer::new();
         sysinfo.encode(&mut writer);
-        let result = writer.done();
-
-        dbg!(result);
-
-
     }
 
 }

@@ -119,6 +119,7 @@ impl MAC {
                 timeslot: TimeslotPointer::SameAsDownlink,
                 minimum_priority: 0,
             }),
+            tm_sdu_bits: Bits::repeat(false, 42)
         };
 
         sysinfo_pdu.encode(&mut writer);
@@ -139,6 +140,7 @@ impl MAC {
             ts_reserved_frames: TSReservedFrames::Reserve1,
             u_plane_dtx: false,
             frame_18_extension: false,
+            tm_sdu_bits: Bits::repeat(false, 29)
         };
 
         sync_pdu.encode(&mut writer);

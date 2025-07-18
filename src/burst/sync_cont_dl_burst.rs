@@ -45,13 +45,13 @@ fn build_burst_sync_cont_dl(
     burst.extend([false; 2]);
 
     // Frequency correction bits (f1-f80)
-    burst.extend(&frequency_correction_bits()[(1 - 1)..80]);
+    burst.extend(&frequency_correction_bits()[0..80]);
 
     // SB1
     burst.extend(sb1_bits);
 
     // Synchronisation training sequence (y1-38)
-    burst.extend(&training_sequence_sync_bits()[(1 - 1)..38]);
+    burst.extend(&training_sequence_sync_bits()[0..38]);
 
     // BB (30 bits)
     burst.extend(&bb_bits[0..30]);
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn empty_burst_is_correct() {
 
-            let _ = env_logger::builder().is_test(true).try_init();
+        let _ = env_logger::builder().is_test(true).try_init();
 
         let burst = build_burst_sync_cont_dl(
             Bits::repeat(false, 120),

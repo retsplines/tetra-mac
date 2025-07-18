@@ -17,16 +17,24 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// Panic due to a bounds check failure
+    fn bounds_check_fail(&self, callee: &str, size: usize) -> ! {
+        panic!(
+            "{}: Attempting to read {size} bits at position {}, but only {} bits remaining, total size is {}",
+            callee, self.position, self.count_remaining(), self.data.len()
+        )
+    }
+
     /// Get the number of remaining bits
-    fn remaining(&self) -> usize {
+    fn count_remaining(&self) -> usize {
         self.data.len() - self.position
     }
     
     /// Skip a number of bits
     pub fn skip(&mut self, size: usize) {
 
-        if size > self.remaining() {
-            panic!("not enough bits left to skip {size}, only {remaining} remaining", remaining = self.remaining())
+        if size > self.count_remaining() {
+            self.bounds_check_fail("skip", size);
         }
 
         // Advance the reader
@@ -40,9 +48,9 @@ impl<'a> Reader<'a> {
             panic!("can't read more than 32 bits, attempting {size}")
         }
 
-        let remaining= self.remaining();
+        let remaining= self.count_remaining();
         if size > remaining {
-            panic!("not enough bits left, need {size} got {remaining}")
+            self.bounds_check_fail("read_int", size);
         }
 
         // Read the bits & load into a u32
@@ -57,13 +65,46 @@ impl<'a> Reader<'a> {
     /// Read the next bit as a boolean
     pub fn read_bool(&mut self) -> bool {
 
-        if self.remaining() < 1 {
-            panic!("attempting to read a boolean while at end of buffer")
+        if self.count_remaining() < 1 {
+            self.bounds_check_fail("read_bool", 1);
         }
 
         // Return the bit without advancing
         let result = self.data[self.position];
         self.position += 1;
+
+        result
+    }
+
+    /// Read the rest of the bits that are available and return them inside a BitVec
+    pub fn read_rest(&mut self) -> Bits {
+
+        // Count the remaining bits
+        let remaining = self.count_remaining();
+
+        // Create a new BitVec with the remaining bits
+        let mut result = Bits::with_capacity(remaining);
+
+        // Copy the remaining bits into the new BitVec
+        result.extend_from_bitslice(&self.data[self.position .. self.position + remaining]);
+
+        // Advance the reader
+        self.position += remaining;
+
+        result
+    }
+
+    pub fn read(&mut self, size: usize) -> Bits {
+
+        if size > self.count_remaining() {
+            self.bounds_check_fail("read", size);
+        }
+
+        // Read the bits and return them
+        let result = Bits::from_bitslice(&self.data[self.position .. self.position + size]);
+
+        // Advance the reader
+        self.position += size;
 
         result
     }
@@ -77,19 +118,36 @@ mod tests {
     #[test]
     fn reads_6_bit_int() {
 
-        let data: Bits = Bits::from_vec(vec![
-            0b110000_11, 0b0000_0000
+        let data = Bits::from_bitslice(bits![
+            u8, Msb0;
+            1, 1, 0, 0, 0, 0, // 48
+            1, 1, 0, 0, 0, 0, // 48
+            0, 0, 0, 0, 0, 0, // Padding bits
+        ]);
+
+
+        // Create a reader over the data
+        let mut cur = Reader::new(&data);
+
+        assert_eq!(cur.read_int(6), 48);
+        assert_eq!(cur.read_int(6), 48);
+    }
+
+    #[test]
+    fn reads_bool() {
+
+        let data = Bits::from_bitslice(bits![
+            u8, Msb0;
+            0, 1, 0, 1
         ]);
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);
 
-        let first_int = cur.read_int(6);
-        assert_eq!(first_int, 48);
-
-        // Read another
-        let second_int = cur.read_int(6);
-        assert_eq!(second_int, 48);
-
+        // Read the first bit
+        assert!(!cur.read_bool());
+        assert!(cur.read_bool());
+        assert!(!cur.read_bool());
+        assert!(cur.read_bool());
     }
 }

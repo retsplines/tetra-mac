@@ -37,6 +37,12 @@ impl Writer {
     pub fn write_bool(&mut self, value: bool) {
         self.data.push(value);
     }
+    
+    /// Write bits directly
+    pub fn write(&mut self, bits: &Bits) {
+        // Append the bits onto the inner slice
+        self.data.extend_from_bitslice(bits.as_bitslice());
+    }
 
     /// Finish working with the writer, moving out the underlying bits
     pub fn done(self) -> Bits {

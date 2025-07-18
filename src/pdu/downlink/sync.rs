@@ -1,3 +1,4 @@
+use crate::Bits;
 use crate::codec::{Writer, Decodable, Encodable, Reader};
 use crate::pdu::downlink::partial::{SharingMode, TSReservedFrames};
 
@@ -11,11 +12,13 @@ pub struct Sync {
     pub sharing_mode: SharingMode,
     pub ts_reserved_frames: TSReservedFrames,
     pub u_plane_dtx: bool,
-    pub frame_18_extension: bool
+    pub frame_18_extension: bool,
+    pub tm_sdu_bits: Bits
 }
 
 impl Decodable for Sync {
     fn decode(reader: &mut Reader) -> Self {
+
         let result = Sync {
             system_code: reader.read_int(4),
             colour_code: reader.read_int(6),
@@ -26,17 +29,25 @@ impl Decodable for Sync {
             ts_reserved_frames: num::FromPrimitive::from_u32(reader.read_int(3)).unwrap(),
             u_plane_dtx: reader.read_bool(),
             frame_18_extension: reader.read_bool(),
+            tm_sdu_bits: Bits::new()
         };
 
         // Consume the reserved bit(s)
         reader.read_bool();
 
-        result
+        // Read the TM-SDU bits
+        let bits = reader.read(29);
+
+        Sync {
+            tm_sdu_bits: bits,
+            ..result
+        }
     }
 }
 
 impl Encodable for Sync {
     fn encode(&self, writer: &mut Writer) {
+
         writer.write_int(self.system_code, 4);
         writer.write_int(self.colour_code, 6);
         writer.write_int(self.timeslot_number, 2);
@@ -49,16 +60,19 @@ impl Encodable for Sync {
 
         // Reserved:
         writer.write_bool(false);
+        
+        // Write the TM-SDU bits
+        writer.write(&self.tm_sdu_bits);
     }
 }
 
 mod tests {
+    use bitvec::prelude::*;
     use crate::Bits;
     use super::*;
 
     #[test]
     fn encodes() {
-        
         let pdu = Sync {
             system_code: 0,
             colour_code: 32,
@@ -69,6 +83,7 @@ mod tests {
             ts_reserved_frames: TSReservedFrames::Reserve6,
             u_plane_dtx: false,
             frame_18_extension: true,
+            tm_sdu_bits: Bits::repeat(false, 29)
         };
 
         let mut writer = Writer::new();
@@ -82,13 +97,24 @@ mod tests {
     #[test]
     fn decodes() {
 
-        let data = Bits::from_vec(vec![
-            0b0000_1111, 0b11_01_0001, 0b1_000111_0, 0b0_001_0_1_0_0
+        let data = Bits::from_bitslice(bits![
+            u8, Msb0;
+            0, 0, 0, 0, // system code
+            1, 1, 1, 1, 1, 1, // colour code
+            0, 1, // timeslot number
+            0, 0, 0, 1, 1, // frame number
+            0, 0, 0, 1, 1, 1, // multiframe number
+            0, 0, // sharing mode (ContinuousTransmission)
+            0, 0, 1, // ts_reserved_frames (Reserve2)
+            0, // u_plane_dtx
+            1, // frame_18_extension
+            0, // reserved bit
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, // tm_sdu_bits (29 bits)
         ]);
 
         let mut reader = Reader::new(&data);
         let sync_pdu = Sync::decode(&mut reader);
-        
+
         assert_eq!(sync_pdu.system_code, 0);
         assert_eq!(sync_pdu.colour_code, 63);
         assert_eq!(sync_pdu.timeslot_number, 1);
@@ -96,7 +122,12 @@ mod tests {
         assert_eq!(sync_pdu.multiframe_number, 7);
         assert_eq!(sync_pdu.sharing_mode, SharingMode::ContinuousTransmission);
         assert_eq!(sync_pdu.ts_reserved_frames, TSReservedFrames::Reserve2);
-        assert_eq!(sync_pdu.frame_18_extension, true);
+        assert!(!sync_pdu.u_plane_dtx);
+        assert!(sync_pdu.frame_18_extension);
+        assert_eq!(sync_pdu.tm_sdu_bits, Bits::from_bitslice(bits![
+            u8, Msb0;
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
+        ]));
 
     }
 

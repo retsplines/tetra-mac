@@ -8,6 +8,7 @@ mod channels;
 mod pdu;
 mod mcch;
 mod dqpsk;
+mod lower;
 
 use bitvec::prelude::*;
 
