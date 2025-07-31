@@ -1,4 +1,3 @@
-struct Puncturer {
-    coefficients: Vec<i32>,
-    mother_rate: i32
-}
+mod puncturers;
+mod coder;
+mod state;
