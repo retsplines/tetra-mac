@@ -4,17 +4,17 @@ pub(crate) struct State(u8);
 
 impl State {
 
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self(0)
     }
 
-    fn shift_in(&mut self, bit: bool) {
+    pub fn shift_in(&mut self, bit: bool) {
         self.0 <<= 1;
         self.0 |= bit as u8;
         self.0 &= 0b1111;
     }
 
-    fn get(&self) -> [bool; 4] {
+    pub fn get(&self) -> [bool; 4] {
         [
             self.0 & 0b0001 != 0,
             self.0 & 0b0010 != 0,
@@ -23,7 +23,7 @@ impl State {
         ]
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.0 = 0;
     }
 
@@ -68,7 +68,5 @@ mod tests {
         state.reset();
         assert_eq!(state.get(), [false, false, false, false]);
     }
-
-
 
 }
