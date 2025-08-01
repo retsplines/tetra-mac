@@ -1,4 +1,3 @@
-use bitvec::macros::internal::funty::Fundamental;
 use bitvec::prelude::BitVec;
 use crate::lower::rcpc::state::State;
 use crate::lower::rcpc::puncturers::{Puncturer};
@@ -61,6 +60,25 @@ fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
     punctured
 }
 
+struct Depunctured {
+    mother: BitVec,
+    valid_mask: BitVec
+}
+
+/// Depuncture a punctured code
+fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
+
+    let depunctured_len =
+        ((punctured.len() * puncturer.numerator as usize) / puncturer.denominator as usize) * 4;
+
+    let mut mother_code = BitVec::repeat(false, depunctured_len);
+    let mut valid_mask = BitVec::repeat(false, depunctured_len);
+
+    // TODO: Implement
+
+
+}
+
 /// RCPC-encode a block using the specified puncturer
 fn encode(block: &BitVec, maybe_puncturer: Option<&Puncturer>, state: &mut State) -> BitVec {
 
@@ -91,8 +109,9 @@ mod tests {
         let orig = bitvec![0, 1, 0, 1, 0, 1, 0, 1];
         let mut state = State::new();
         let mother = encode(&orig, None, &mut state);
+        let expt_mother = bitvec![0,0,0,0,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,0];
 
-        assert_eq!(mother, bitvec![0,0,0,0,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,0]);
+        assert_eq!(mother.as_bitslice(), expt_mother.as_bitslice());
     }
 
 }

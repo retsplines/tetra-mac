@@ -38,7 +38,7 @@ impl Index<usize> for State {
 
         assert!(index < 4, "index out of bounds for 4-bit register");
 
-        if (self.0 >> (3 - index)) & 1 == 1 {
+        if (self.0 >> index) & 1 == 1 {
             &TRUE
         } else {
             &FALSE
