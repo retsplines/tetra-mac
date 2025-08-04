@@ -15,7 +15,7 @@ pub enum PredefinedPuncturer {
 }
 
 impl Puncturer {
-    fn build(predefined_puncturer: PredefinedPuncturer) -> Puncturer {
+    pub fn build(predefined_puncturer: &PredefinedPuncturer) -> Puncturer {
         match predefined_puncturer {
             PredefinedPuncturer::Rate2Over3Puncturer => Puncturer {
                 coefficients: vec![0, 1, 2, 5],
@@ -27,7 +27,7 @@ impl Puncturer {
             },
             PredefinedPuncturer::Rate1Over3Puncturer => Puncturer {
                 coefficients: vec![0, 1, 2, 3, 5, 6, 7],
-                t: 3,
+                t: 6,
                 period: 8,
                 numerator: 1,
                 denominator: 3,
