@@ -8,10 +8,18 @@ impl State {
         Self(0)
     }
 
+    pub fn val(&self) -> u8 {
+        self.0
+    }
+
     pub fn shift_in(&mut self, bit: bool) {
         self.0 <<= 1;
         self.0 |= bit as u8;
         self.0 &= 0b1111;
+    }
+
+    pub fn set(&mut self, value: u8) {
+        self.0 = value;
     }
 
     pub fn get(&self) -> [bool; 4] {

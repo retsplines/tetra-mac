@@ -9,7 +9,7 @@ macro_rules! bit {
 }
 
 /// Encode a bit into a 4-bit codeword
-fn encode_bit(bit: bool, state: &mut State) -> [bool; 4] {
+pub fn encode_bit(bit: bool, state: &mut State) -> [bool; 4] {
 
     let mut output: [bool; 4] =  [false; 4];
 
