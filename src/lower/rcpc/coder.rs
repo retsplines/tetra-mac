@@ -29,7 +29,7 @@ pub fn encode_bit(bit: bool, state: &mut State) -> [bool; 4] {
     output
 }
 
-fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
+pub fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
 
     let base = mother.len() / 4;
 
@@ -60,13 +60,13 @@ fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
     punctured
 }
 
-struct Depunctured {
-    mother: BitVec,
-    valid_mask: BitVec
+pub struct Depunctured {
+    pub mother: BitVec,
+    pub valid_mask: BitVec
 }
 
 /// Depuncture a punctured code
-fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
+pub fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
 
     let depunctured_len =
         ((punctured.len() * puncturer.numerator as usize) / puncturer.denominator as usize) * 4;
@@ -90,7 +90,7 @@ fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
 }
 
 /// RCPC-encode a block using the specified puncturer
-fn encode(block: &BitVec, maybe_puncturer: Option<&Puncturer>, state: &mut State) -> BitVec {
+pub fn encode(block: &BitVec, maybe_puncturer: Option<&Puncturer>, state: &mut State) -> BitVec {
 
     let mut encoded = BitVec::new();
 
@@ -144,10 +144,11 @@ mod tests {
             println!("bit pattern {} len {}", mother_code, mother_code.len());
             let punctured = puncture(&mother_code, &puncturer);
 
-            println!("Mother code {:?}, punctured to {:?}", mother_code, punctured);
+            println!("punctured to {} len {}", punctured, punctured.len());
 
             // Depuncture and compare
             let depunctured = depuncture(&punctured, &puncturer);
+            println!("Depunctured to {} valid {}", depunctured.mother, depunctured.valid_mask);
 
             // Compare only the valid bits
             for valid_index in depunctured.valid_mask.iter_ones() {

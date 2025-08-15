@@ -1,5 +1,4 @@
 use bitvec::{
-    prelude::*,
     vec::BitVec,
 };
 use crate::lower::rcpc::coder::encode_bit;
@@ -63,22 +62,23 @@ pub fn build_trellis() -> Vec<StateTransitions> {
 
 /// todo: change this to use integer (signed) metrics so matches are -1, mismatches are +1 and
 /// todo: uncertain bits produce no change (0)
-fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4]) -> f32 {
+fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4]) -> i32 {
    input
        .iter()
        .zip(validity.iter())
        .zip(expected.iter())
        .map(|((&rx, &valid), &expected)| {
 
-           // 1 if mismatched, 0 if not
-           let mismatch = (rx != expected) as u8 as f32;
-
-           // If the bit is valid, then the 1/0 score applies
-           // If it is not valid, score is scaled by half
-           if valid {
-               mismatch
+            // If this bit is uncertain (I.e. not valid, the result of depuncturing), return 0
+           if !valid {
+               return 0;
+           }
+           
+           // Otherwise, return +1 for mismatches or -1 for matches
+           return if rx != expected {
+               1
            } else {
-               mismatch * 0.5
+               -1
            }
 
        })
@@ -99,11 +99,12 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
     let num_states = trellis.len();
 
     // Track path metrics
-    let mut prev: [f32; 16] = [0.5; 16];
-    let mut current: [f32; 16] = [0.0; 16];
+    let lowest = i32::MIN / 4;
+    let mut prev: [i32; 16] = [lowest; 16];
+    let mut current: [i32; 16] = [0; 16];
 
     // Start in state 0 with cost 0
-    prev[0] = 0f32;
+    prev[0] = 0;
 
     let mut survivors = vec![[0usize; 16]; num_steps];
 
@@ -116,7 +117,7 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
 
             // There will be two possible incoming routes
             let incoming = &trellis[next_state];
-            let mut best_metric = 1.0f32;
+            let mut best_metric = lowest;
             let mut best_prev_state = 0usize;
 
             // For each of the two transitions
@@ -151,7 +152,8 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
     }
 
     // Now we'll backtrace, building the decoded bits
-    let mut decoded_bits = bitvec![];
+    let mut decoded_bits = BitVec::with_capacity(num_steps);
+    decoded_bits.resize(num_steps, false); // preallocate space
 
     // Find the best final state (I.e. the state with the lowest cost in prev)
     let (mut state, _) = prev
@@ -174,7 +176,7 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
             .unwrap();
 
         // Add it to the decoded bits
-        decoded_bits.push(trans.input_bit);
+        decoded_bits.set(t, trans.input_bit);
 
         // Move on to the next state
         state = prev_state;
@@ -187,21 +189,70 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
 mod tests {
 
     use bitvec::prelude::*;
+    use crate::lower::rcpc::coder::{depuncture, encode, puncture};
+    use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
+    use crate::lower::rcpc::state::State;
     use crate::lower::rcpc::viterbi::build_trellis;
     use crate::lower::rcpc::viterbi::decode;
 
     #[test]
     fn builds_trellis_correctly() {
-        let trellis = build_trellis();
+        let _trellis = build_trellis();
     }
 
     #[test]
     fn decodes_simple_correctly() {
         let trellis = build_trellis();
-        let example = bitvec![0, 1, 0, 1, 0, 0, 0, 0];
-        let valid = bitvec![1, 1, 1, 1, 1, 1, 1, 1];
+        let example = bitvec![0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0];
+        let valid =  bitvec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         let decoded = decode(example, valid, &trellis);
         println!("{}", decoded);
+    }
+
+    #[test]
+    fn decodes_simple_encoded_example() {
+
+        let trellis = build_trellis();
+
+        // Encode an example
+        let example = bitvec![1, 1, 1, 1, 1, 1, 0, 0];
+        let mut state = State::new();
+        let encoded = encode(&example, None, &mut state);
+        println!("{}", encoded);
+
+        // Now decode it
+        let valid = BitVec::repeat(true, encoded.len());
+        let decoded = decode(encoded, valid, &trellis);
+        println!("{}", decoded);
+
+    }
+
+    #[test]
+    fn decodes_punctured_encoded_example() {
+
+        let trellis = build_trellis();
+
+        // Encode an example
+        let example = bitvec![1, 1, 1, 1, 1, 1, 0, 0];
+        println!("Input:  {} len {}", example, example.len());
+        let mut state = State::new();
+        let encoded = encode(&example, None, &mut state);
+        println!("Mother: {} len {}", encoded, encoded.len());
+
+        // Puncture the example
+        let puncturer = Puncturer::build(&PredefinedPuncturer::Rate1Over3Puncturer);
+        let punctured = puncture(&encoded, &puncturer);
+        println!("Ra 1/3: {} len {}", punctured, punctured.len());
+
+        // Depuncture the example
+        let depunctured = depuncture(&punctured, &puncturer);
+        println!("Depunc: {} len {}", depunctured.mother, depunctured.mother.len());
+        println!("Valid:  {}", depunctured.valid_mask);
+
+        // Decode
+        let decoded = decode(depunctured.mother, depunctured.valid_mask, &trellis);
+        println!("Decode: {} len {}", decoded, decoded.len());
+
     }
 
 }
