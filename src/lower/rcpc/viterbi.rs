@@ -60,8 +60,9 @@ pub fn build_trellis() -> Vec<StateTransitions> {
         .collect()
 }
 
-/// todo: change this to use integer (signed) metrics so matches are -1, mismatches are +1 and
-/// todo: uncertain bits produce no change (0)
+/// Compute the branch metric for an input codeword and corresponding validity bits
+/// For invalid bits, a score of 0 is accumulated.
+/// For valid bits, a score of -1 is accumulated for matches or -1 for mismatches.
 fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4]) -> i32 {
    input
        .iter()
@@ -194,6 +195,7 @@ mod tests {
     use crate::lower::rcpc::state::State;
     use crate::lower::rcpc::viterbi::build_trellis;
     use crate::lower::rcpc::viterbi::decode;
+    use test_log::test;
 
     #[test]
     fn builds_trellis_correctly() {

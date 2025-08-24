@@ -144,7 +144,12 @@ impl MAC {
         };
 
         sync_pdu.encode(&mut writer);
-        writer.done()
+        let type1_bits = writer.done();
+        
+        // Block-code the bits
+        let type2_bits = 
+        
+        
     }
 }
 
