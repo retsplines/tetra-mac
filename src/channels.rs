@@ -5,3 +5,4 @@ pub enum LogicalChannelUplink {
     Traffic,
     Stealing
 }
+
