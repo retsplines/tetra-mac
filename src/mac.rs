@@ -147,8 +147,9 @@ impl MAC {
         let type1_bits = writer.done();
         
         // Block-code the bits
-        let type2_bits = 
-        
+
+        // TODO: Just return the type1 bits for now
+        type1_bits
         
     }
 }
