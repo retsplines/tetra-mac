@@ -1,10 +1,8 @@
 use bitvec::prelude::*;
-use crate::Bits;
+use crate::bits::Bits;
+use crate::new_bits;
 
 /// Generates the tail bits
 fn tail_bits() -> Bits {
-    Bits::from_bitslice(bits![
-        u8, Msb0;
-        1, 1, 0, 0
-    ])
+    new_bits![1, 1, 0, 0]
 }

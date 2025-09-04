@@ -1,5 +1,5 @@
 use bitvec::slice::BitSlice;
-use crate::Bits;
+use crate::bits::Bits;
 
 /// Define the boundary positions for phase sum calculations
 /// Note that these are symbol numbers (SNs), not bit numbers (BNs)

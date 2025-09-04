@@ -1,5 +1,6 @@
 use bitvec::macros::internal::funty::Fundamental;
 use bitvec::prelude::*;
+use crate::bits::Bits;
 
 #[derive(Clone)]
 pub struct State {
@@ -56,39 +57,34 @@ fn lfsr_bit(state: &mut State) -> bool {
     // Shift the bit into the LFSR state
     state.shift(bit != 0);
 
-    println!("Result bit {bit:?}");
-
     bit != 0
 }
 
-pub fn encode(block: &BitVec, scrambler_state: &mut State) -> Result<BitVec, &'static str> {
+pub fn scrambler_encode(block: &Bits, scrambler_state: &mut State) -> Bits {
 
     // Clone the input block
     let mut scrambled = block.clone();
 
     // For each bit in block, xor with a LFSR bit
     for (index, bit) in block.iter().enumerate() {
-        println!("Scrambling bit {} - pre-state:\t\t {:?}", index, scrambler_state.state.to_string());
         scrambled.set(index, bit.as_bool() ^ lfsr_bit(scrambler_state));
-        println!("Scrambled bit {} - after-state:\t\t {:?}", index, scrambler_state.state.to_string());
     }
 
-    Ok(scrambled)
+    scrambled
 }
 
-pub fn decode(block: &BitVec, scrambler_state: &mut State) -> Result<BitVec, &'static str> {
+pub fn scrambler_decode(block: &Bits, state: &mut State) -> Bits {
 
     // Same as encoding
-    encode(block, scrambler_state)
+    scrambler_encode(block, state)
 
 }
 
 #[cfg(test)]
 mod test {
 
-    use bitvec::bitvec;
-    use bitvec::prelude::Lsb0;
-    use bitvec::field::BitField;
+    use bitvec::prelude::*;
+    use crate::new_bits;
 
     #[test]
     fn state_shifts_correctly() {
@@ -136,14 +132,14 @@ mod test {
         let mut scrambler_state = super::State::new(0, 0, 0);
 
         // Simple test
-        let block = bitvec![0, 1, 0, 1];
-        let scrambled = super::encode(&block, &mut scrambler_state).unwrap();
+        let block = new_bits![0, 1, 0, 1];
+        let scrambled = super::scrambler_encode(&block, &mut scrambler_state);
 
         // Reset the scrambler state
         scrambler_state = super::State::new(0, 0, 0);
 
         // Verify that descrambling gets us back to the original
-        let descrambled = super::decode(&scrambled, &mut scrambler_state).unwrap();
+        let descrambled = super::scrambler_decode(&scrambled, &mut scrambler_state);
 
         assert_eq!(descrambled, block);
     }

@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::Bits;
+use crate::bits::Bits;
 use crate::codec::{Writer, Encodable, SizedField};
 use crate::pdu::downlink::partial::{Offset, Timeslots};
 

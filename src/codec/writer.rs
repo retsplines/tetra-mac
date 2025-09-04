@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use crate::Bits;
+use crate::bits::Bits;
 
 /// Writes a PDU sequentially
 pub struct Writer {

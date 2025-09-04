@@ -1,5 +1,5 @@
 use phase_adjustment::phase_adjustment_bits;
-use crate::Bits;
+use crate::bits::Bits;
 use crate::burst::partial::training_sequence::{
     training_sequence_normal_1_bits, 
     training_sequence_normal_2_bits, 
@@ -92,7 +92,7 @@ fn build_burst_normal_cont_dl(
 mod tests {
 
     use super::*;
-    use crate::Bits;
+    use crate::bits::Bits;
 
     #[test]
     fn empty_burst_is_correct() {

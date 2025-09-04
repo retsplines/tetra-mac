@@ -1,6 +1,4 @@
-use bitvec::{
-    vec::BitVec,
-};
+use crate::bits::Bits;
 use crate::lower::rcpc::coder::encode_bit;
 use crate::lower::rcpc::state::State;
 
@@ -70,7 +68,7 @@ fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4
        .zip(expected.iter())
        .map(|((&rx, &valid), &expected)| {
 
-            // If this bit is uncertain (I.e. not valid, the result of depuncturing), return 0
+           // If this bit is uncertain (I.e. not valid, the result of depuncturing), return 0
            if !valid {
                return 0;
            }
@@ -87,7 +85,7 @@ fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4
 }
 
 /// Decode a 1/4-rate convolutionally-coded message
-pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>) -> BitVec {
+pub fn rcpc_decode(input: Bits, valid_mask: Bits, trellis: &Vec<StateTransitions>) -> Bits {
 
     // validity mask and input must be the same length
     assert_eq!(input.len(), valid_mask.len());
@@ -153,7 +151,7 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
     }
 
     // Now we'll backtrace, building the decoded bits
-    let mut decoded_bits = BitVec::with_capacity(num_steps);
+    let mut decoded_bits = Bits::with_capacity(num_steps);
     decoded_bits.resize(num_steps, false); // preallocate space
 
     // Find the best final state (I.e. the state with the lowest cost in prev)
@@ -190,12 +188,13 @@ pub fn decode(input: BitVec, valid_mask: BitVec, trellis: &Vec<StateTransitions>
 mod tests {
 
     use bitvec::prelude::*;
-    use crate::lower::rcpc::coder::{depuncture, encode, puncture};
+    use crate::lower::rcpc::coder::{depuncture, rcpc_encode, puncture};
     use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
-    use crate::lower::rcpc::state::State;
     use crate::lower::rcpc::viterbi::build_trellis;
-    use crate::lower::rcpc::viterbi::decode;
+    use crate::lower::rcpc::viterbi::rcpc_decode;
     use test_log::test;
+    use crate::bits::Bits;
+    use crate::new_bits;
 
     #[test]
     fn builds_trellis_correctly() {
@@ -205,9 +204,9 @@ mod tests {
     #[test]
     fn decodes_simple_correctly() {
         let trellis = build_trellis();
-        let example = bitvec![0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0];
-        let valid =  bitvec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        let decoded = decode(example, valid, &trellis);
+        let example = new_bits![0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0];
+        let valid =  new_bits![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        let decoded = rcpc_decode(example, valid, &trellis);
         println!("{}", decoded);
     }
 
@@ -217,14 +216,13 @@ mod tests {
         let trellis = build_trellis();
 
         // Encode an example
-        let example = bitvec![1, 1, 1, 1, 1, 1, 0, 0];
-        let mut state = State::new();
-        let encoded = encode(&example, None, &mut state);
+        let example = new_bits![1, 1, 1, 1, 1, 1, 0, 0];
+        let encoded = rcpc_encode(&example, None);
         println!("{}", encoded);
 
         // Now decode it
-        let valid = BitVec::repeat(true, encoded.len());
-        let decoded = decode(encoded, valid, &trellis);
+        let valid = Bits::repeat(true, encoded.len());
+        let decoded = rcpc_decode(encoded, valid, &trellis);
         println!("{}", decoded);
 
     }
@@ -235,10 +233,9 @@ mod tests {
         let trellis = build_trellis();
 
         // Encode an example
-        let example = bitvec![1, 1, 1, 1, 1, 1, 0, 0];
+        let example = new_bits![1, 1, 1, 1, 1, 1, 0, 0];
         println!("Input:  {} len {}", example, example.len());
-        let mut state = State::new();
-        let encoded = encode(&example, None, &mut state);
+        let encoded = rcpc_encode(&example, None);
         println!("Mother: {} len {}", encoded, encoded.len());
 
         // Puncture the example
@@ -252,7 +249,7 @@ mod tests {
         println!("Valid:  {}", depunctured.valid_mask);
 
         // Decode
-        let decoded = decode(depunctured.mother, depunctured.valid_mask, &trellis);
+        let decoded = rcpc_decode(depunctured.mother, depunctured.valid_mask, &trellis);
         println!("Decode: {} len {}", decoded, decoded.len());
 
     }

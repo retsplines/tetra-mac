@@ -1,4 +1,4 @@
-use crate::Bits;
+use crate::bits::Bits;
 use crate::codec::{Writer, Decodable, Encodable, Reader};
 use crate::pdu::downlink::partial::{SharingMode, TSReservedFrames};
 
@@ -68,7 +68,8 @@ impl Encodable for Sync {
 
 mod tests {
     use bitvec::prelude::*;
-    use crate::Bits;
+    use crate::bits::Bits;
+    use crate::new_bits;
     use super::*;
 
     #[test]
@@ -97,8 +98,7 @@ mod tests {
     #[test]
     fn decodes() {
 
-        let data = Bits::from_bitslice(bits![
-            u8, Msb0;
+        let data = new_bits![
             0, 0, 0, 0, // system code
             1, 1, 1, 1, 1, 1, // colour code
             0, 1, // timeslot number
@@ -110,7 +110,7 @@ mod tests {
             1, // frame_18_extension
             0, // reserved bit
             0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, // tm_sdu_bits (29 bits)
-        ]);
+        ];
 
         let mut reader = Reader::new(&data);
         let sync_pdu = Sync::decode(&mut reader);
@@ -124,10 +124,9 @@ mod tests {
         assert_eq!(sync_pdu.ts_reserved_frames, TSReservedFrames::Reserve2);
         assert!(!sync_pdu.u_plane_dtx);
         assert!(sync_pdu.frame_18_extension);
-        assert_eq!(sync_pdu.tm_sdu_bits, Bits::from_bitslice(bits![
-            u8, Msb0;
+        assert_eq!(sync_pdu.tm_sdu_bits, new_bits![
             0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
-        ]));
+        ]);
 
     }
 
