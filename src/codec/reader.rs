@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use crate::Bits;
+use crate::bits::Bits;
 
 pub struct Reader<'a> {
     data: &'a Bits,
@@ -113,17 +113,17 @@ impl<'a> Reader<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::new_bits;
     use super::*;
 
     #[test]
     fn reads_6_bit_int() {
 
-        let data = Bits::from_bitslice(bits![
-            u8, Msb0;
+        let data = new_bits![
             1, 1, 0, 0, 0, 0, // 48
             1, 1, 0, 0, 0, 0, // 48
             0, 0, 0, 0, 0, 0, // Padding bits
-        ]);
+        ];
 
 
         // Create a reader over the data
@@ -136,10 +136,9 @@ mod tests {
     #[test]
     fn reads_bool() {
 
-        let data = Bits::from_bitslice(bits![
-            u8, Msb0;
+        let data = new_bits![
             0, 1, 0, 1
-        ]);
+        ];
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);

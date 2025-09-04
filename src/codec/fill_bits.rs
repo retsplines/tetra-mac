@@ -1,4 +1,4 @@
-use crate::Bits;
+use crate::bits::Bits;
 
 pub enum FillBitCapacity {
     Octets(usize),

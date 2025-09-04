@@ -73,7 +73,7 @@ mod tests {
 
     use bitvec::prelude::*;
     use super::*;
-    use crate::Bits;
+    use crate::bits::Bits;
 
     #[test]
     fn decodes() {

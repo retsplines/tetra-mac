@@ -9,11 +9,9 @@ mod pdu;
 mod mcch;
 mod dqpsk;
 mod lower;
+mod bits;
 
 use bitvec::prelude::*;
-
-// Define a common type for bit storage
-type Bits = BitVec<u8, Msb0>;
 
 fn main() {
 

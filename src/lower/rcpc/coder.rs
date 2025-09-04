@@ -1,4 +1,5 @@
 use bitvec::prelude::BitVec;
+use crate::bits::Bits;
 use crate::lower::rcpc::state::State;
 use crate::lower::rcpc::puncturers::{Puncturer};
 
@@ -29,7 +30,8 @@ pub fn encode_bit(bit: bool, state: &mut State) -> [bool; 4] {
     output
 }
 
-pub fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
+/// Puncture a mother code using the specified puncturer
+pub fn puncture(mother: &Bits, puncturer: &Puncturer) -> Bits {
 
     let base = mother.len() / 4;
 
@@ -61,12 +63,12 @@ pub fn puncture(mother: &BitVec, puncturer: &Puncturer) -> BitVec {
 }
 
 pub struct Depunctured {
-    pub mother: BitVec,
-    pub valid_mask: BitVec
+    pub mother: Bits,
+    pub valid_mask: Bits
 }
 
 /// Depuncture a punctured code
-pub fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
+pub fn depuncture(punctured: &Bits, puncturer: &Puncturer) -> Depunctured {
 
     let depunctured_len =
         ((punctured.len() * puncturer.numerator as usize) / puncturer.denominator as usize) * 4;
@@ -89,14 +91,15 @@ pub fn depuncture(punctured: &BitVec, puncturer: &Puncturer) -> Depunctured {
     }
 }
 
-/// RCPC-encode a block using the specified puncturer
-pub fn encode(block: &BitVec, maybe_puncturer: Option<&Puncturer>, state: &mut State) -> BitVec {
+/// RCPC-rm_encode a block using the specified puncturer
+pub fn rcpc_encode(block: &Bits, maybe_puncturer: Option<&Puncturer>) -> Bits {
 
+    let mut state = State::new();
     let mut encoded = BitVec::new();
 
     // Generate the mother code
     for in_bit in block.iter() {
-        encoded.extend(encode_bit(*in_bit, state).iter())
+        encoded.extend(encode_bit(*in_bit, &mut state).iter())
     }
 
     if let Some(puncturer) = maybe_puncturer {
@@ -111,15 +114,15 @@ pub fn encode(block: &BitVec, maybe_puncturer: Option<&Puncturer>, state: &mut S
 mod tests {
     use bitvec::prelude::*;
     use crate::lower::rcpc::puncturers::PredefinedPuncturer::{Rate1Over3Puncturer, Rate2Over3Puncturer};
+    use crate::new_bits;
     use super::*;
 
     /// Check that the mother code behaviour is consistent with osmo-tetra
     #[test]
     fn mother_code_consistent_with_osmo_tetra() {
-        let orig = bitvec![0, 1, 0, 1, 0, 1, 0, 1];
-        let mut state = State::new();
-        let mother = encode(&orig, None, &mut state);
-        let expt_mother = bitvec![0,0,0,0,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,0];
+        let orig = new_bits![0, 1, 0, 1, 0, 1, 0, 1];
+        let mother = rcpc_encode(&orig, None);
+        let expt_mother = new_bits![0,0,0,0,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,0];
         assert_eq!(mother.as_bitslice(), expt_mother.as_bitslice());
     }
 
@@ -132,13 +135,13 @@ mod tests {
         ];
 
         // Generate a 32-bit alternating 1010... pattern
-        let pattern = bits![mut 0; 32];
+        let mut pattern = Bits::with_capacity(32);
         pattern.fill_with(|idx| idx % 2 == 0);
 
         for puncturer_to_test in puncturers_to_test.iter() {
 
             // Puncture
-            let mother_code = BitVec::from_bitslice(pattern);
+            let mother_code = Bits::from_bitslice(pattern.as_bitslice());
             let puncturer = Puncturer::build(puncturer_to_test);
 
             println!("bit pattern {} len {}", mother_code, mother_code.len());

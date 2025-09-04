@@ -1,4 +1,5 @@
-use crate::Bits;
+use crate::bits::Bits;
+use crate::channels::LogicalChannel;
 use crate::codec::{Writer, Encodable};
 use crate::tdma_time::TDMATime;
 use crate::pdu::downlink::*;
@@ -145,12 +146,10 @@ impl MAC {
 
         sync_pdu.encode(&mut writer);
         let type1_bits = writer.done();
-        
-        // Block-code the bits
 
-        // TODO: Just return the type1 bits for now
-        type1_bits
-        
+        let bsch = LogicalChannel::BroadcastSynchronisation;
+        bsch.encode(type1_bits)
+
     }
 }
 
