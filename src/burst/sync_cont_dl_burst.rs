@@ -97,8 +97,6 @@ mod tests {
     #[test]
     fn empty_burst_is_correct() {
 
-        let _ = env_logger::builder().is_test(true).try_init();
-
         let burst = build_burst_sync_cont_dl(
             Bits::repeat(false, 120),
             Bits::repeat(false, 216),

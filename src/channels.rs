@@ -1,10 +1,10 @@
 use crate::bits::Bits;
 use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
-use crate::lower::block_coder::{block_encode};
-use crate::lower::rm_coder::{rm_encode};
-use crate::lower::rcpc::{rcpc_encode};
-use crate::lower::interleaver::{interleaver_encode};
-use crate::lower::scrambler::{scrambler_encode, State};
+use crate::lower::block_coder::{block_decode, block_encode};
+use crate::lower::rm_coder::{rm_decode, rm_encode};
+use crate::lower::rcpc::{rcpc_decode, rcpc_encode};
+use crate::lower::interleaver::{interleaver_decode, interleaver_encode};
+use crate::lower::scrambler::{scrambler_decode, scrambler_encode, State};
 
 pub enum InitialCode {
     RMCode,
@@ -136,7 +136,7 @@ impl LogicalChannel {
             None => type3_bits
         };
 
-        // Scrambling
+        // Scrambling?
         if chan_props.scrambling {
             // TODO use the correct scrambler state, which means this needs to be aware of MNC/MCC/BCC
             // TODO should the scrambler state be passed-in maybe?
@@ -148,7 +148,56 @@ impl LogicalChannel {
     }
 
     /// Decode this channel from bits, applying the appropriate decoding chain
-    pub fn decode(&self) -> Bits {
-        todo!()
+    pub fn decode(self, type5_bits: Bits) -> Bits {
+
+        // Resolve channel props
+        let chan_props = ChannelProperties::build(self);
+
+        // Scrambling?
+        let type4_bits = if chan_props.scrambling {
+            // TODO use the correct scrambler state, which means this needs to be aware of MNC/MCC/BCC
+            // TODO should the scrambler state be passed-in maybe?
+            let mut scrambler_state = State::new(0, 0, 0);
+            scrambler_decode(&type5_bits, &mut scrambler_state)
+        } else {
+            // No scrambling applied
+            type5_bits
+        };
+
+        // Interleaving?
+        let type3_bits = match chan_props.interleaver {
+            Some(InterleaverBehaviour::Block {k, a}) => interleaver_decode(&type4_bits, k, a),
+            Some(InterleaverBehaviour::OverNBlocks) => todo!("over-N-blocks interleaving not yet supported"),
+            None => type4_bits
+        };
+
+        // RCPC?
+        let mut type2_bits = match chan_props.rcpc {
+            Some(predefined_punc) =>
+                rcpc_decode(&type3_bits, Some(&Puncturer::build(&predefined_punc))),
+            None => type3_bits
+        };
+
+        // Strip tail bits?
+        if chan_props.tail_bits != 0 {
+            type2_bits.truncate(type2_bits.len() - chan_props.tail_bits);
+        }
+
+        // Initial coding?
+        match chan_props.initial_code {
+            Some(InitialCode::RMCode) => rm_decode(&type2_bits).unwrap(),
+            Some(InitialCode::BlockCode) => block_decode(&type2_bits).unwrap(),
+            None => type2_bits
+        }
     }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn decodes_channel_correctly() {
+
+    }
+
 }

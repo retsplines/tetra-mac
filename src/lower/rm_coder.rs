@@ -68,7 +68,7 @@ pub fn rm_encode(block: &Bits) -> Result<Bits, ReedMullerEncodeError> {
     let ident_matrix = generate_ident_matrix();
 
     // Encode into 30 bits
-    let mut encoded = Bits::with_capacity(30);
+    let mut encoded = Bits::repeat(false, 30);
 
     for (index, row) in ident_matrix.iter().enumerate() {
         // If the bit at index is set, xor the row with the corresponding matrix row

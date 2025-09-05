@@ -1,6 +1,5 @@
 // Defines a few types that are used throughout for bit storage and manipulation
-use bitvec::order::Msb0;
-use bitvec::prelude::BitVec;
+use bitvec::prelude::*;
 
 // Bit field where the MSB is stored first (0th)
 pub type Bits = BitVec<usize, Msb0>;

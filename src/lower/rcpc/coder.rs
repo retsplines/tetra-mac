@@ -2,6 +2,7 @@ use bitvec::prelude::BitVec;
 use crate::bits::Bits;
 use crate::lower::rcpc::state::State;
 use crate::lower::rcpc::puncturers::{Puncturer};
+use crate::lower::rcpc::viterbi::{build_trellis, viterbi_decode};
 
 macro_rules! bit {
     ($b:expr) => {
@@ -91,7 +92,7 @@ pub fn depuncture(punctured: &Bits, puncturer: &Puncturer) -> Depunctured {
     }
 }
 
-/// RCPC-rm_encode a block using the specified puncturer
+/// RCPC-encode a block using the specified optional puncturing
 pub fn rcpc_encode(block: &Bits, maybe_puncturer: Option<&Puncturer>) -> Bits {
 
     let mut state = State::new();
@@ -108,6 +109,23 @@ pub fn rcpc_encode(block: &Bits, maybe_puncturer: Option<&Puncturer>) -> Bits {
 
     // No puncturing required
     encoded
+}
+
+/// RCPC-decode a block using the specified optional depuncturing
+pub fn rcpc_decode(block: &Bits, maybe_puncturer: Option<&Puncturer>) -> Bits {
+
+    // depuncture
+    let depunctured = match maybe_puncturer {
+        Some(puncturer) => depuncture(block, puncturer),
+        None => Depunctured {
+            mother: block.clone(),
+            valid_mask: Bits::repeat(true, block.len())
+        }
+    };
+
+    // Viterbi-decode the block
+    let trellis = build_trellis();
+    viterbi_decode(depunctured.mother, depunctured.valid_mask, &trellis)
 }
 
 #[cfg(test)]
