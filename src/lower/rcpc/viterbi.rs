@@ -85,7 +85,7 @@ fn branch_metric_value(input: [bool; 4], validity: [bool; 4], expected: [bool; 4
 }
 
 /// Decode a 1/4-rate convolutionally-coded message
-pub fn rcpc_decode(input: Bits, valid_mask: Bits, trellis: &Vec<StateTransitions>) -> Bits {
+pub fn viterbi_decode(input: Bits, valid_mask: Bits, trellis: &Vec<StateTransitions>) -> Bits {
 
     // validity mask and input must be the same length
     assert_eq!(input.len(), valid_mask.len());
@@ -191,7 +191,7 @@ mod tests {
     use crate::lower::rcpc::coder::{depuncture, rcpc_encode, puncture};
     use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
     use crate::lower::rcpc::viterbi::build_trellis;
-    use crate::lower::rcpc::viterbi::rcpc_decode;
+    use crate::lower::rcpc::viterbi::viterbi_decode;
     use test_log::test;
     use crate::bits::Bits;
     use crate::new_bits;
@@ -206,7 +206,7 @@ mod tests {
         let trellis = build_trellis();
         let example = new_bits![0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0];
         let valid =  new_bits![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        let decoded = rcpc_decode(example, valid, &trellis);
+        let decoded = viterbi_decode(example, valid, &trellis);
         println!("{}", decoded);
     }
 
@@ -222,7 +222,7 @@ mod tests {
 
         // Now decode it
         let valid = Bits::repeat(true, encoded.len());
-        let decoded = rcpc_decode(encoded, valid, &trellis);
+        let decoded = viterbi_decode(encoded, valid, &trellis);
         println!("{}", decoded);
 
     }
@@ -249,7 +249,7 @@ mod tests {
         println!("Valid:  {}", depunctured.valid_mask);
 
         // Decode
-        let decoded = rcpc_decode(depunctured.mother, depunctured.valid_mask, &trellis);
+        let decoded = viterbi_decode(depunctured.mother, depunctured.valid_mask, &trellis);
         println!("Decode: {} len {}", decoded, decoded.len());
 
     }

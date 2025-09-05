@@ -4,26 +4,23 @@ use crate::bits::Bits;
 
 #[derive(Clone)]
 pub struct State {
-    pub state: BitVec
+    pub state: Bits
 }
 
 impl State {
 
     pub fn new(mcc: u32, mnc: u32, colour: u32) -> State {
 
-        let mut state = BitVec::new();
-
         // The first two bits are set
-        state.extend_from_bitslice(bitvec![1, 1].as_bitslice());
+        let state = bits![mut usize, Msb0; 0; 32];
+        state[0..10].store_be(mcc);
+        state[10..24].store_be(mnc);
+        state[24..30].store_be(colour);
 
-        // Copy the 6-bit colour, 14-bit MNC and 10-bit MCC into the state
-        state.extend_from_bitslice(&colour.view_bits::<Lsb0>()[0..6]);
-        state.extend_from_bitslice(&mnc.view_bits::<Lsb0>()[0..14]);
-        state.extend_from_bitslice(&mcc.view_bits::<Lsb0>()[0..10]);
+        // Plus two padding bits, k=-31, k=-30
+        state[30..32].store_be(0b11);
 
-        println!("Initial state: {:?}", state.to_string());
-
-        State { state }
+        State { state: Bits::from_bitslice(state) }
     }
 
     pub fn shift(&mut self, bit: bool) {
@@ -60,14 +57,17 @@ fn lfsr_bit(state: &mut State) -> bool {
     bit != 0
 }
 
-pub fn scrambler_encode(block: &Bits, scrambler_state: &mut State) -> Bits {
+pub fn scrambler_encode(block: &Bits, initial_state: &State) -> Bits {
+
+    // Clone the initial state
+    let mut scrambler_state = initial_state.clone();
 
     // Clone the input block
     let mut scrambled = block.clone();
 
     // For each bit in block, xor with a LFSR bit
     for (index, bit) in block.iter().enumerate() {
-        scrambled.set(index, bit.as_bool() ^ lfsr_bit(scrambler_state));
+        scrambled.set(index, bit.as_bool() ^ lfsr_bit(&mut scrambler_state));
     }
 
     scrambled
@@ -91,7 +91,7 @@ mod test {
 
         // Start with all 1s
         let mut scrambler_state = super::State::new(0xffff, 0xffff, 0xff);
-        assert_eq!(scrambler_state.state.load::<u32>(), 0xffffffff);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0xffffffff);
 
         // Shift in a 0
         assert!(scrambler_state.state[31]);
@@ -105,24 +105,23 @@ mod test {
         // Check the bit positions in the state
         // (This is actually how the BSCH is scrambled)
         scrambler_state = super::State::new(0, 0, 0);
-        println!("Scram state: {:?}", scrambler_state.state.to_string());
-        assert_eq!(scrambler_state.state.load::<u32>(), 0x00000003);
-
-        // MCC
-        scrambler_state = super::State::new(0xffff, 0, 0);
-        assert_eq!(scrambler_state.state.load::<u32>(), 0xffc00003);
-
-        // MNC
-        scrambler_state = super::State::new(0, 0xffff, 0);
-        assert_eq!(scrambler_state.state.load::<u32>(), 0x003fff03);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0x00000003);
 
         // Colour
         scrambler_state = super::State::new(0, 0, 0xff);
-        assert_eq!(scrambler_state.state.load::<u32>(), 0x000000ff);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0x000000ff);
+
+        // MCC
+        scrambler_state = super::State::new(0xffff, 0, 0);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0xffc00003);
+
+        // MNC
+        scrambler_state = super::State::new(0, 0xffff, 0);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0x003fff03);
 
         // A specific MCC/MNC/Colour
         scrambler_state = super::State::new(234, 30, 17);
-        assert_eq!(scrambler_state.state.load::<u32>(), 0x3a801e47);
+        assert_eq!(scrambler_state.state.load_be::<u32>(), 0x3a801e47);
     }
 
     #[test]

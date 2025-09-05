@@ -68,7 +68,6 @@ impl Encodable for Sync {
 
 mod tests {
     use bitvec::prelude::*;
-    use crate::bits::Bits;
     use crate::new_bits;
     use super::*;
 
@@ -109,7 +108,7 @@ mod tests {
             0, // u_plane_dtx
             1, // frame_18_extension
             0, // reserved bit
-            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, // tm_sdu_bits (29 bits)
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 // tm_sdu_bits (29 bits)
         ];
 
         let mut reader = Reader::new(&data);
@@ -125,7 +124,7 @@ mod tests {
         assert!(!sync_pdu.u_plane_dtx);
         assert!(sync_pdu.frame_18_extension);
         assert_eq!(sync_pdu.tm_sdu_bits, new_bits![
-            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
+             0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
         ]);
 
     }

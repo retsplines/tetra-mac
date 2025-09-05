@@ -1,5 +1,6 @@
 use bitvec::prelude::*;
 use crate::bits::Bits;
+use crate::new_bits;
 
 /// Writes a PDU sequentially
 pub struct Writer {
@@ -67,7 +68,7 @@ mod tests {
         writer.write_bool(true);
 
         // Validate the bits are correct
-        assert_eq!(writer.data.as_bitslice(), bitvec![1, 0, 1]);
+        assert_eq!(writer.data.as_bitslice(), new_bits![1, 0, 1]);
 
         // Length should be exact
         assert_eq!(writer.data.len(), 3);
@@ -84,7 +85,11 @@ mod tests {
 
         // Length?
         assert_eq!(writer.data.len(), 16);
-        assert_eq!(writer.data.as_raw_slice(), [0x43, 0xFF]);
+        let bits = writer.done();
+        assert_eq!(bits, new_bits![
+            0, 1, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+        ]);
 
     }
 

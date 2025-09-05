@@ -53,7 +53,7 @@ pub fn block_decode(block: &Bits) -> Result<Bits, BlockError> {
     let indicated: u16 = crc_bits.load_be();
 
     // Copy the block bits without the checksum into a new vec
-    let decoded: BitVec<usize, Msb0> = decoded.to_bitvec();
+    let decoded: Bits = Bits::from_bitslice(decoded);
 
     // Calculate the checksum on the rest
     let calculated = compute(&decoded);

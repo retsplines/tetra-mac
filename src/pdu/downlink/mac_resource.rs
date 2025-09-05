@@ -73,15 +73,29 @@ mod tests {
 
     use bitvec::prelude::*;
     use super::*;
-    use crate::bits::Bits;
+    use crate::new_bits;
 
     #[test]
     fn decodes() {
 
-        let data = Bits::from_vec(vec![
-            0x20, 0x69, 0x00, 0x04, 0x02, 0x03, 0x48, 0x40,
-            0x00, 0x00, 0x4e, 0xab, 0x10, 0x00, 0x10, 0x80
-        ]);
+        let data = new_bits![
+            0, 0, // PDU type
+            1, // fill bit indication
+            0, // position of grant
+            0, 0, // encryption mode
+            0, // random access
+            0, 0, 1, 1, 0, 1, // length (13 octets)
+            0, 0, 1, // address type (SSI)
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, // address (1026)
+            0, // power control (absent)
+            0, // slot granting (no grant)
+            0, // channel allocation (none)
+            // tm-sdu (77)
+            0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+            0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+        ];
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);
@@ -93,6 +107,7 @@ mod tests {
 
         // Grant not on current channel (because no granting element)
         assert_eq!(pdu.grant_is_on_current_channel, false);
+
     }
 
     #[test]

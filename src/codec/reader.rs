@@ -114,6 +114,7 @@ impl<'a> Reader<'a> {
 #[cfg(test)]
 mod tests {
     use crate::new_bits;
+    use bitvec::prelude::*;
     use super::*;
 
     #[test]
