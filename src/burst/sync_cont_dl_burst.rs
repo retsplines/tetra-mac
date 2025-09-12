@@ -1,5 +1,6 @@
 use phase_adjustment::phase_adjustment_bits;
 use crate::bits::Bits;
+use crate::burst::BurstExtractionError;
 use crate::burst::partial::training_sequence::{
     training_sequence_normal_3_bits,
     training_sequence_sync_bits
@@ -14,8 +15,15 @@ use crate::burst::partial::phase_adjustment::{
     PHASE_ADJUSTMENT_SYMBOL_RANGE_HD
 };
 
+#[derive(Debug)]
+pub struct SyncContDownlinkBurst {
+    sb1_bits: Bits,
+    sb2_bits: Bits,
+    bb_bits: Bits
+}
+
 /// Builds the synchronisation continuous downlink burst
-fn build_burst_sync_cont_dl(
+pub fn build_burst_sync_cont_dl(
     sb1_bits: Bits,
     sb2_bits: Bits,
     bb_bits: Bits
@@ -82,15 +90,33 @@ fn build_burst_sync_cont_dl(
 
     // Insert the A and B phase adjustment bits into the structure
     burst.splice(pa_a_ref .. pa_a_ref + 2, pa_a_bits);
-    burst.splice(pa_b_ref  .. pa_b_ref + 2, pa_b_bits);
+    burst.splice(pa_b_ref .. pa_b_ref + 2, pa_b_bits);
 
     burst
 }
 
+/// Validate and extract the synchronisation continuous downlink burst
+pub fn extract_burst_sync_cont_dl(burst: Bits) -> Result<SyncContDownlinkBurst, BurstExtractionError> {
+
+    if burst.len() != 510 {
+        return Err(BurstExtractionError::IncorrectLength {
+            expected: 510,
+            provided: burst.len()
+        })
+    }
+
+    Ok(SyncContDownlinkBurst {
+        sb1_bits: Bits::from_bitslice(&burst[94..214]),
+        sb2_bits: Bits::from_bitslice(&burst[252..282]),
+        bb_bits: Bits::from_bitslice(&burst[282..498])
+    })
+}
 
 #[cfg(test)]
 mod tests {
-
+    use bitvec::order::Msb0;
+    use bitvec::slice::BitSlice;
+    use bitvec::view::BitView;
     use super::*;
     use crate::bits::Bits;
 
@@ -103,9 +129,36 @@ mod tests {
             Bits::repeat(false, 30),
         );
 
-        print!("burst {burst}");
+        assert_eq!(burst.len(), 510);
 
     }
+
+    #[test]
+    #[ignore]
+    fn extracts_burst_correctly() {
+
+        // TODO: Too long - find out what excess bits we have here...
+        let burst_bitslice: &BitSlice<u8, Msb0> = [
+            0x1a, 0xdb, 0xfc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xfc, 0x64, 0xcb, 0xe6, 0x61,
+            0x20, 0xd6, 0xa1, 0xb4, 0xdb, 0x48, 0x48, 0xe9, 0x79, 0xae, 0xaf, 0x06, 0x73, 0xa7, 0x06, 0x7b,
+            0xef, 0x70, 0xee, 0x6f, 0xf9, 0x3c, 0x66, 0xb8, 0x59, 0xc9, 0x8b, 0xa8, 0x68, 0xbe, 0x03, 0xef,
+            0xd6, 0x8e, 0x53, 0x75, 0x25, 0x18, 0x4a, 0x4e, 0x68, 0x95, 0xb5, 0x6b, 0xa9, 0x97, 0x9b, 0x70,
+            0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0xaa, 0xaa, 0x00, 0x04, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d,
+            0x00, 0x33, 0x00, 0x00, 0x00, 0x00, 0xab, 0x00, 0x27, 0x59
+        ].view_bits::<Msb0>();
+
+
+        let burst_bits = Bits::from_bitslice(burst_bitslice);
+
+        // Extract the burst
+        let extracted_burst = extract_burst_sync_cont_dl(burst_bits);
+
+        println!("{:?}", extracted_burst.unwrap().bb_bits.len());
+
+    }
+
+
 
 
 
