@@ -197,7 +197,9 @@ mod tests {
 
     #[test]
     fn decodes_channel_correctly() {
-
+        
+        
+        
     }
 
 }

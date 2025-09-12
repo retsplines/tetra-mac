@@ -12,7 +12,7 @@ impl State {
     pub fn new(mcc: u32, mnc: u32, colour: u32) -> State {
 
         // The first two bits are set
-        let state = bits![mut usize, Msb0; 0; 32];
+        let state = bits![mut u8, Msb0; 0; 32];
         state[0..10].store_be(mcc);
         state[10..24].store_be(mnc);
         state[24..30].store_be(colour);
