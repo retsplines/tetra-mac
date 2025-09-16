@@ -7,5 +7,6 @@ pub enum BurstExtractionError {
     IncorrectLength {
         expected: usize,
         provided: usize
-    }
+    },
+    InvalidSequence
 }
