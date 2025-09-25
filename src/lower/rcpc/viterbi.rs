@@ -27,7 +27,7 @@ pub fn build_trellis() -> Vec<StateTransitions> {
     // Build the states by iterating over the 16 possible "previous" states...
     for prev_state in 0..16 {
 
-        println!("Processing prev-state {prev_state}");
+        // println!("Processing prev-state {prev_state}");
 
         // ...and [0, 1] input bits
         for input_bit in [false, true] {
@@ -36,7 +36,7 @@ pub fn build_trellis() -> Vec<StateTransitions> {
 
             // Compute the output for this state & input bit
             let output_bits = encode_bit(input_bit, &mut state);
-            println!("  Processing input {input_bit} -> output bits {:?} output state {:?}", output_bits, state.val());
+            // println!("  Processing input {input_bit} -> output bits {:?} output state {:?}", output_bits, state.val());
 
             // Add the input & previous state as a possible incoming route to the output state
             incoming_lists[state.val() as usize].push(Transition {

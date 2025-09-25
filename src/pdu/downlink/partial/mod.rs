@@ -12,6 +12,10 @@ pub use self::sharing_mode::SharingMode;
 pub use self::ts_reserved_frames::TSReservedFrames;
 pub use self::offset::Offset;
 pub use self::timeslots::Timeslots;
+pub use self::neighbour_cell_broadcast::NeighbourCellBroadcast;
+pub use self::cell_service_level::CellServiceLevel;
+pub use self::late_entry_info::LateEntryInfo;
+pub use self::bs_service_details::BSServiceDetails;
 
 mod address;
 mod allocation_type;
@@ -31,3 +35,7 @@ mod rf_parameters;
 mod sharing_mode;
 mod ts_reserved_frames;
 mod timeslots;
+mod neighbour_cell_broadcast;
+mod cell_service_level;
+mod late_entry_info;
+mod bs_service_details;

@@ -24,7 +24,7 @@ pub fn interleaver_encode(block: &Bits, k: usize, a: usize) -> Result<Bits, Inte
 
     // Iterate over each bit in the block
     for (index, bit) in block.iter().enumerate() {
-        let interleaved_index = interleave_bit(k, a, index);
+        let interleaved_index = interleave_bit(k, a, index + 1);
         interleaved.set(interleaved_index - 1, *bit);
     }
 
@@ -37,8 +37,9 @@ pub fn interleaver_decode(block: &Bits, k: usize, a: usize) -> Bits {
     let mut deinterleaved = Bits::repeat(false, k);
 
     // Iterate over each bit in the block
-    for (index, _bit) in block.iter().enumerate() {
-        deinterleaved.set(index, block[interleave_bit(k, a, index) - 1]);
+    for (out_index, _bit) in block.iter().enumerate() {
+        let bit_source_index = interleave_bit(k, a, out_index + 1) - 1;
+        deinterleaved.set(out_index, block[bit_source_index]);
     }
 
     deinterleaved

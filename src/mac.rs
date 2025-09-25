@@ -1,6 +1,7 @@
 use crate::bits::Bits;
 use crate::channels::LogicalChannel;
 use crate::codec::{Writer, Encodable};
+use crate::lower::scrambler::State;
 use crate::tdma_time::TDMATime;
 use crate::pdu::downlink::*;
 
@@ -148,8 +149,8 @@ impl MAC {
         let type1_bits = writer.done();
 
         let bsch = LogicalChannel::BroadcastSynchronisation;
-        bsch.encode(type1_bits)
-
+        let scrambler_state = State::new(0, 0, 0);
+        bsch.encode(type1_bits, &scrambler_state)
     }
 }
 
