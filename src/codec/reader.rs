@@ -26,7 +26,7 @@ impl<'a> Reader<'a> {
     }
 
     /// Get the number of remaining bits
-    fn count_remaining(&self) -> usize {
+    pub fn count_remaining(&self) -> usize {
         self.data.len() - self.position
     }
     

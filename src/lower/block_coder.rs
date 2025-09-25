@@ -49,6 +49,8 @@ pub fn block_decode(block: &Bits) -> Result<Bits, BlockError> {
 
     // Strip the final 16 bits which contain the checksum
     let (decoded, crc_bits) = block.split_at(block.len() - 16);
+
+
     info!("{}", crc_bits);
     let indicated: u16 = crc_bits.load_be();
 

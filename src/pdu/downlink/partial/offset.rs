@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use crate::codec::SizedField;
 
-#[derive(FromPrimitive, ToPrimitive)]
+#[derive(FromPrimitive, ToPrimitive, Debug)]
 pub enum Offset {
     NoOffset = 0b00,
     Plus6_25kHz = 0b01,
