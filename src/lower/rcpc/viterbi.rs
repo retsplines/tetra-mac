@@ -192,7 +192,6 @@ mod tests {
     use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
     use crate::lower::rcpc::viterbi::build_trellis;
     use crate::lower::rcpc::viterbi::viterbi_decode;
-    use test_log::test;
     use crate::bits::Bits;
     use crate::new_bits;
 

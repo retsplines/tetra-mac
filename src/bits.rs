@@ -10,3 +10,20 @@ pub type Bits = BitVec<u8, Msb0>;
         bitvec::bitvec![u8, Msb0; $($elem),*]
     };
 }
+
+// Everywhere in tetra-mac, I'll be using u8 as the representation for a bit
+// The rationale for this is that TETRA frames are suitably short that even in embedded environments
+// it's unlikely that it will pose a significant issue memory-wise.
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct Bit(u8);
+
+impl From<bool> for Bit {
+    fn from(value: bool) -> Self {
+        Bit(if value { 0xff } else { 0x00 })
+    }
+}
+
+impl Bit {
+
+}

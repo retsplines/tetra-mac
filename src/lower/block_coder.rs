@@ -76,7 +76,6 @@ pub fn block_decode(block: &Bits) -> Result<Bits, BlockError> {
 #[cfg(test)]
 mod test {
 
-    use test_log::test;
     use bitvec::prelude::*;
     use crate::lower::block_coder::{block_decode, block_encode};
     use crate::new_bits;
