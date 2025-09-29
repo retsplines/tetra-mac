@@ -190,7 +190,7 @@ impl LogicalChannel {
 mod tests {
     use crate::new_bits;
     use bitvec::prelude::*;
-    use crate::bits::Bits;
+    use crate::bits::{Bits};
     use crate::channels::LogicalChannel;
     use crate::pdu::downlink::{MLESyncPDU, Sync, Sysinfo};
     use crate::codec::{Decodable, Reader};
