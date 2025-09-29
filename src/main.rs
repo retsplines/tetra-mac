@@ -10,6 +10,8 @@ mod mcch;
 mod dqpsk;
 mod lower;
 mod bits;
+mod hard_bits;
+
 use bitvec::prelude::*;
 
 fn main() {
