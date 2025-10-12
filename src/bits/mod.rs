@@ -1,3 +1,6 @@
+pub mod hard_vec;
+pub mod hard_slice;
+
 // Defines a few types that are used throughout for bit storage and manipulation
 use bitvec::prelude::*;
 
@@ -76,6 +79,7 @@ mod tests {
         let using_macro = bitvec![0, 1, 1, 0,  0, 0, 0, 0,  1, 0, 1, 0,  1, 0, 0, 1,  1, 1, 0, 1];
         let using_from_bitstr = from_bitstr("0110 0000 1010 1001 1101");
         assert_eq!(using_macro, using_from_bitstr);
+
 
     }
 
