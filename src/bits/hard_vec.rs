@@ -1,5 +1,7 @@
 use std::fmt::{Debug, Formatter};
-use std::ops::{Index, Range, RangeFull};
+use std::ops::Index;
+use std::ops::Range;
+use std::ops::RangeFull;
 use crate::bits::hard_slice::HardBitSlice;
 use ref_cast::RefCast;
 
@@ -28,6 +30,13 @@ impl std::str::FromStr for HardBitVec {
     }
 }
 
+impl std::ops::Deref for HardBitVec {
+    type Target = Vec<bool>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl std::fmt::Display for HardBitVec {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         // Delegate to the slice implementation
@@ -44,6 +53,10 @@ impl HardBitVec {
             self.0.push(bit);
         }
     }
+
+    pub fn new(size: usize) -> Self {
+        HardBitVec(vec![false; size])
+    }
 }
 
 impl std::ops::Index<Range<usize>> for HardBitVec {
@@ -53,28 +66,37 @@ impl std::ops::Index<Range<usize>> for HardBitVec {
     }
 }
 
+impl std::ops::IndexMut<Range<usize>> for HardBitVec {
+    fn index_mut(&mut self, range: Range<usize>) -> &mut Self::Output {
+        HardBitSlice::ref_cast_mut(&mut self.0[range])
+    }
+}
+
 impl Index<RangeFull> for HardBitVec {
     type Output = HardBitSlice;
-
     fn index(&self, range: RangeFull) -> &Self::Output {
         HardBitSlice::ref_cast(&self.0[range])
     }
 }
 
+#[cfg(test)]
 mod tests {
 
-    use std::str::FromStr;
-    use crate::bits::hard_vec::HardBitVec;
+    use super::*;
 
     #[test]
     fn from_str_works() {
+        let hb1: HardBitVec = "010010100101".parse().unwrap();
+        assert_eq!(hb1.len(), 12);
+        assert_eq!(hb1.0[0], false);
+        assert_eq!(hb1.0[11], true);
+    }
 
-        let mut hb1 = HardBitVec::from_str("010010100101").unwrap();
+    #[test]
+    fn push_int_works() {
+        let mut hb1: HardBitVec = HardBitVec::new(0);
+        hb1.push_int(1, 4);
         println!("{}", hb1);
-
-        println!("{}", &hb1[..]);
-
-
     }
 
 }

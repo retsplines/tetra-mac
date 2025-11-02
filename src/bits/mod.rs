@@ -58,10 +58,10 @@ pub fn from_bitstr(s: &str) -> Bits {
     bv
 }
 
+#[cfg(test)]
 mod tests {
 
-    use bitvec::prelude::*;
-    use crate::bits::from_bitstr;
+    use super::*;
 
     #[test]
     fn from_bitstr_behaves_identically_to_bitvec_macro() {
