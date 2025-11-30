@@ -66,13 +66,14 @@ impl Encodable for Sync {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use bitvec::prelude::*;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
     use super::*;
 
     #[test]
     fn encodes() {
+        
         let pdu = Sync {
             system_code: 0,
             colour_code: 32,
@@ -97,19 +98,19 @@ mod tests {
     #[test]
     fn decodes() {
 
-        let data = new_bits![
-            0, 0, 0, 0, // system code
-            1, 1, 1, 1, 1, 1, // colour code
-            0, 1, // timeslot number
-            0, 0, 0, 1, 1, // frame number
-            0, 0, 0, 1, 1, 1, // multiframe number
-            0, 0, // sharing mode (ContinuousTransmission)
-            0, 0, 1, // ts_reserved_frames (Reserve2)
-            0, // u_plane_dtx
-            1, // frame_18_extension
-            0, // reserved bit
-            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 // tm_sdu_bits (29 bits)
-        ];
+        let data = from_bitstr("
+           0000 // system code
+           111111 // colour code
+           01 // timeslot number
+           00011 // frame number
+           000111 // multiframe number
+           00 // sharing mode (ContinuousTransmission)
+           001 // ts_reserved_frames (Reserve2)
+           0 // u_plane_dtx
+           1 // frame_eighteen_extension
+           0 // reserved bit
+           01010101010101010101010101010 // tm_sdu_bits (29 bits)
+        ");
 
         let mut reader = Reader::new(&data);
         let sync_pdu = Sync::decode(&mut reader);
@@ -123,9 +124,7 @@ mod tests {
         assert_eq!(sync_pdu.ts_reserved_frames, TSReservedFrames::Reserve2);
         assert!(!sync_pdu.u_plane_dtx);
         assert!(sync_pdu.frame_18_extension);
-        assert_eq!(sync_pdu.tm_sdu_bits, new_bits![
-             0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
-        ]);
+        assert_eq!(sync_pdu.tm_sdu_bits, from_bitstr("01010101010101010101010101010"));
 
     }
 

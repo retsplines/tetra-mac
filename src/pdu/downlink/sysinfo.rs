@@ -336,7 +336,8 @@ impl Decodable for Sysinfo {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
 
     use super::*;
 

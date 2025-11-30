@@ -71,31 +71,31 @@ impl Encodable for MACResourcePDU {
 #[cfg(test)]
 mod tests {
 
-    use bitvec::prelude::*;
     use super::*;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
 
     #[test]
     fn decodes() {
 
-        let data = new_bits![
-            0, 0, // PDU type
-            1, // fill bit indication
-            0, // position of grant
-            0, 0, // encryption mode
-            0, // random access
-            0, 0, 1, 1, 0, 1, // length (13 octets)
-            0, 0, 1, // address type (SSI)
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, // address (1026)
-            0, // power control (absent)
-            0, // slot granting (no grant)
-            0, // channel allocation (none)
-            // tm-sdu (77)
-            0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-            0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-        ];
+        let data = from_bitstr("
+            00 // PDU type
+            1 // fill bit indication
+            0 // position of grant
+            00 // encryption mode
+            0 // random access
+            001101 // length (thirteen octets)
+            001 // address type (SSI)
+            000000000000010000000010 // address (ten twenty six)
+            0 // power control (absent)
+            0 // slot granting (no grant)
+            0 // channel allocation (none)
+
+            // tm-sdu (77 bits)
+            00011010010000100000
+            00000000000000000010
+            01110101010110001000
+            00000000000010000
+        ");
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);
@@ -107,6 +107,12 @@ mod tests {
 
         // Grant not on current channel (because no granting element)
         assert_eq!(pdu.grant_is_on_current_channel, false);
+
+        // Length
+        assert_eq!(pdu.length, Length::Octets(13));
+
+        // Address
+        assert_eq!(pdu.address, Address::SSI { address: 1026 });
 
     }
 
@@ -131,9 +137,9 @@ mod tests {
         mac_resource.encode(&mut writer);
         let bits = writer.done();
 
-        assert_eq!(bits, bits![u8, Msb0;
-            0,0, 1, 0, 0,0, 0, 1,0,0,0,0,0, 0,0,1, 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0, 0, 0, 0
-        ]);
+        assert_eq!(bits, from_bitstr("
+            0010000100000001000000000000010000000010000
+        "));
 
     }
 

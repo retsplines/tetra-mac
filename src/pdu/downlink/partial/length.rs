@@ -3,7 +3,7 @@ use crate::codec::{Reader, Decodable, Encodable, Writer};
 
 const LENGTH_SIZE: usize = 6;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Length {
     Reserved,
     NullPDU,

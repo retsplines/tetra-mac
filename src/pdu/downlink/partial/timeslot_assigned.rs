@@ -35,18 +35,18 @@ impl Encodable for TimeslotAssigned {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
 
-    use bitvec::{bits};
-    use bitvec::order::Msb0;
+    use super::*;
+    use crate::bits::from_bitstr;
     use crate::codec::{Writer, Encodable};
-    use crate::pdu::downlink::partial::TimeslotAssigned;
 
     #[test]
     fn encodes() {
         let tsa = TimeslotAssigned::Specific((false, true, false, true));
         let mut writer = Writer::new();
         tsa.encode(&mut writer);
-        assert_eq!(writer.done(), bits![u8, Msb0; 0, 1, 0, 1]);
+        assert_eq!(writer.done(), from_bitstr("0101"));
     }
 }

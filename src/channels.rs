@@ -188,11 +188,10 @@ impl LogicalChannel {
 
 #[cfg(test)]
 mod tests {
-    use crate::new_bits;
-    use bitvec::prelude::*;
+    use crate::bits::from_bitstr;
     use crate::bits::{Bits};
     use crate::channels::LogicalChannel;
-    use crate::pdu::downlink::{MLESyncPDU, Sync, Sysinfo};
+    use crate::pdu::downlink::{MLESyncPDU, Sync};
     use crate::codec::{Decodable, Reader};
     use crate::lower::scrambler::State;
 
@@ -221,9 +220,16 @@ mod tests {
     #[test]
     fn decodes_bsch_channel_correctly() {
         
-        let chan_bits = new_bits![
-            0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1,
-        ];
+        let chan_bits = from_bitstr("
+           0001100100110010
+           1111100110011000
+           0100100000110101
+           1010100001101101
+           0011011011010010
+           0001001000111010
+           0101111001101011
+           10101011
+        ");
 
         let scrambler_state = State::new(0, 0, 0);
 

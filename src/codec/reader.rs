@@ -113,19 +113,18 @@ impl<'a> Reader<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
     use bitvec::prelude::*;
     use super::*;
 
     #[test]
     fn reads_6_bit_int() {
 
-        let data = new_bits![
-            1, 1, 0, 0, 0, 0, // 48
-            1, 1, 0, 0, 0, 0, // 48
-            0, 0, 0, 0, 0, 0, // Padding bits
-        ];
-
+        let data = from_bitstr("
+            110000 // 48
+            110000 // 48
+            000000 // Padding bits
+        ");
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);
@@ -137,9 +136,7 @@ mod tests {
     #[test]
     fn reads_bool() {
 
-        let data = new_bits![
-            0, 1, 0, 1
-        ];
+        let data = from_bitstr("0101");
 
         // Create a reader over the data
         let mut cur = Reader::new(&data);

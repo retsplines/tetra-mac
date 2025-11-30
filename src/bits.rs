@@ -22,17 +22,15 @@ pub fn from_bitstr(s: &str) -> Bits {
 
     for c in s.chars() {
 
-        // Skip whitespace
-        if c == ' ' {
-            continue;
-        }
-
-        current <<= 1;
-        current |= match c {
+        // Everything that isn't 0 or 1 will be skipped
+        let next = match c {
             '0' => 0,
             '1' => 1,
-            _ => panic!("invalid char in bit string"),
+            _ => continue,
         };
+
+        current <<= 1;
+        current |= next;
 
         count += 1;
 
@@ -55,6 +53,7 @@ pub fn from_bitstr(s: &str) -> Bits {
     bv
 }
 
+#[cfg(test)]
 mod tests {
 
     use bitvec::prelude::*;

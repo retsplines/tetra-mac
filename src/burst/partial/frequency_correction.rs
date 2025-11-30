@@ -1,18 +1,18 @@
-use bitvec::prelude::*;
-use crate::{bits::Bits, new_bits};
+use crate::{bits::Bits};
+use crate::bits::from_bitstr;
 
 /// Generates the frequency correction bits
 pub fn frequency_correction_bits() -> Bits {
-    new_bits![
-        1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1, 1,
-    ]
+    from_bitstr("
+        11111111
+        00000000
+        00000000
+        00000000
+        00000000
+        00000000
+        00000000
+        00000000
+        00000000
+        11111111
+    ")
 }

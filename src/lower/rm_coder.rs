@@ -1,26 +1,25 @@
-use bitvec::prelude::*;
 use crate::bits::Bits;
-use crate::new_bits;
+use crate::bits::from_bitstr;
 
 /// Define the generator matrix rows.
 ///
 /// EN 300 392-2 8.2.3.2
 fn generator_matrix_rows() -> Vec<Bits> {
     vec![
-        new_bits![1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-        new_bits![0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-        new_bits![1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-        new_bits![1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-        new_bits![1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0],
-        new_bits![0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0],
-        new_bits![0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0],
-        new_bits![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-        new_bits![1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1],
-        new_bits![0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
-        new_bits![0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-        new_bits![0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1],
-        new_bits![0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1],
-        new_bits![0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+        from_bitstr("1001101101100000"),
+        from_bitstr("0010110111100000"),
+        from_bitstr("1111110000100000"),
+        from_bitstr("1110000000111100"),
+        from_bitstr("1001100000111010"),
+        from_bitstr("0101010000110110"),
+        from_bitstr("0010110000101110"),
+        from_bitstr("1111111111011111"),
+        from_bitstr("1000001100111001"),
+        from_bitstr("0100001010110101"),
+        from_bitstr("0010000110101101"),
+        from_bitstr("0001001001110011"),
+        from_bitstr("0000100101101011"),
+        from_bitstr("0000010011100111")
     ]
 }
 
@@ -32,7 +31,7 @@ pub fn generate_ident_matrix() -> Vec<Bits> {
     for (index, row) in generator_matrix_rows().iter().enumerate() {
 
         // Create a row in the identity matrix
-        let mut ident_row = new_bits![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let mut ident_row = from_bitstr("10000000000000");
         ident_row.shift_right(index);
 
         // Add the generator matrix row to the identity matrix row
@@ -115,10 +114,9 @@ pub fn rm_decode(block: &Bits) -> Result<Bits, ReedMullerDecodeError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
-    use bitvec::prelude::*;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
 
     #[test]
     fn it_generates_ident_matrix() {
@@ -128,14 +126,14 @@ mod test {
 
     #[test]
     fn it_encodes_and_decodes_correctly() {
-        let block = new_bits![0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+        let block = from_bitstr("01010101010101");
         let encoded = super::rm_encode(&block).unwrap();
         super::rm_decode(&encoded).unwrap();
     }
 
     #[test]
     fn it_fails_on_incorrect_lengths() {
-        let block = new_bits![1, 0, 1, 0];
+        let block = from_bitstr("1010");
         assert!(super::rm_encode(&block).is_err());
     }
 }

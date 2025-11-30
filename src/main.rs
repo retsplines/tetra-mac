@@ -11,12 +11,13 @@ mod dqpsk;
 mod lower;
 mod bits;
 use bitvec::prelude::*;
+use crate::bits::from_bitstr;
 
 fn main() {
 
     env_logger::init();
     
-    let mut bits = new_bits![];
+    let mut bits = from_bitstr("");
 
     // Set an arbitrary sized int in the first 8 bits
     bits.push(true);

@@ -130,17 +130,17 @@ pub fn rcpc_decode(block: &Bits, maybe_puncturer: Option<&Puncturer>) -> Bits {
 
 #[cfg(test)]
 mod tests {
-    use bitvec::prelude::*;
+
     use crate::lower::rcpc::puncturers::PredefinedPuncturer::{Rate1Over3Puncturer, Rate2Over3Puncturer};
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
     use super::*;
 
     /// Check that the mother code behaviour is consistent with osmo-tetra
     #[test]
     fn mother_code_consistent_with_osmo_tetra() {
-        let orig = new_bits![0, 1, 0, 1, 0, 1, 0, 1];
+        let orig = from_bitstr("01010101");
         let mother = rcpc_encode(&orig, None);
-        let expt_mother = new_bits![0,0,0,0,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,0,0,1,1,0,1,1,1,0,0,1,1,0];
+        let expt_mother = from_bitstr("00001111101110011110011011100110");
         assert_eq!(mother.as_bitslice(), expt_mother.as_bitslice());
     }
 

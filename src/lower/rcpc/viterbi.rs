@@ -187,13 +187,12 @@ pub fn viterbi_decode(input: Bits, valid_mask: Bits, trellis: &Vec<StateTransiti
 #[cfg(test)]
 mod tests {
 
-    use bitvec::prelude::*;
     use crate::lower::rcpc::coder::{depuncture, rcpc_encode, puncture};
     use crate::lower::rcpc::puncturers::{PredefinedPuncturer, Puncturer};
     use crate::lower::rcpc::viterbi::build_trellis;
     use crate::lower::rcpc::viterbi::viterbi_decode;
     use crate::bits::Bits;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
 
     #[test]
     fn builds_trellis_correctly() {
@@ -203,8 +202,8 @@ mod tests {
     #[test]
     fn decodes_simple_correctly() {
         let trellis = build_trellis();
-        let example = new_bits![0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0];
-        let valid =  new_bits![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        let example = from_bitstr("00001111101110011110011011100110");
+        let valid =  from_bitstr("11111111111111111111111111111111");
         let decoded = viterbi_decode(example, valid, &trellis);
         println!("{}", decoded);
     }
@@ -215,7 +214,7 @@ mod tests {
         let trellis = build_trellis();
 
         // Encode an example
-        let example = new_bits![1, 1, 1, 1, 1, 1, 0, 0];
+        let example = from_bitstr("11111100");
         let encoded = rcpc_encode(&example, None);
         println!("{}", encoded);
 
@@ -232,7 +231,7 @@ mod tests {
         let trellis = build_trellis();
 
         // Encode an example
-        let example = new_bits![1, 1, 1, 1, 1, 1, 0, 0];
+        let example = from_bitstr("11111100");
         println!("Input:  {} len {}", example, example.len());
         let encoded = rcpc_encode(&example, None);
         println!("Mother: {} len {}", encoded, encoded.len());

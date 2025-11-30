@@ -38,15 +38,15 @@ pub fn add_fill_bits(bits: &mut Bits, capacity: FillBitCapacity) -> usize {
 }
 
 #[cfg(test)]
-mod test {
-    use bitvec::prelude::*;
-    use crate::new_bits;
+mod tests {
+
+    use crate::bits::from_bitstr;
     use super::*;
 
     #[test]
     fn adds_fill_bits_upto_x_octets() {
 
-        let mut bits = new_bits![1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
+        let mut bits = from_bitstr("1111111100000000");
 
         let added = add_fill_bits(&mut bits, FillBitCapacity::Octets(4));
 
@@ -61,11 +61,11 @@ mod test {
     #[test]
     fn adds_fill_bits_upto_x_bits() {
 
-        let mut bits = new_bits![
-            1, 1, 1, 1, 1, 1, 1, 1,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 0, 1, 0, 1, 0, 1, 0
-        ];
+        let mut bits = from_bitstr("
+            11111111
+            00000000
+            10101010
+        ");
 
         let added = add_fill_bits(&mut bits, FillBitCapacity::Bits(32));
 

@@ -43,6 +43,7 @@ impl State {
     }
 }
 
+/// Define the taps for the LFSR
 fn taps() -> Vec<u8> {
     vec![32, 26, 23, 22, 16, 12, 11, 10, 8, 7, 5, 4, 2, 1]
 }
@@ -92,14 +93,12 @@ pub fn scrambler_decode(block: &Bits, initial_state: &State) -> Bits {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use bitvec::prelude::*;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
 
     #[test]
-    #[ignore]
-    /// todo: fix these tests, they assume wrong bit order
     fn state_shifts_correctly() {
 
         // Start with all 1s
@@ -109,11 +108,11 @@ mod test {
         // Shift in a 0
         assert!(scrambler_state.state[31]);
         scrambler_state.shift(false);
-        assert!(!scrambler_state.state[31]);
+        assert!(!scrambler_state.state[0]);
 
         // Now shift in a 1
         scrambler_state.shift(true);
-        assert!(scrambler_state.state[31]);
+        assert!(scrambler_state.state[0]);
 
         // Check the bit positions in the state
         // (This is actually how the BSCH is scrambled)
@@ -144,7 +143,7 @@ mod test {
         let mut scrambler_state = super::State::new(0, 0, 0);
 
         // Simple test
-        let block = new_bits![0, 1, 0, 1];
+        let block = from_bitstr("0101");
         let scrambled = super::scrambler_encode(&block, &scrambler_state);
 
         // Reset the scrambler state

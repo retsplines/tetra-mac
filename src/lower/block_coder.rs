@@ -74,25 +74,25 @@ pub fn block_decode(block: &Bits) -> Result<Bits, BlockError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use bitvec::prelude::*;
+    use crate::bits::from_bitstr;
     use crate::lower::block_coder::{block_decode, block_encode};
-    use crate::new_bits;
 
     #[test]
     fn encodes_correctly() {
 
-        let orig = new_bits![
-            0, 0, 0, 1, 0, 0, 0, 0,
-            1, 0, 1, 1, 0, 0, 0, 0,
-            1, 0, 1, 1, 1, 1, 1, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 0, 0, 0, 0, 0, 1, 1,
-            0, 0, 0, 0, 0, 1, 1, 1,
-            1, 1, 0, 1, 0, 0, 1, 1,
-            0, 0, 1, 1
-        ];
+        let orig = from_bitstr("
+           00010000
+           10110000
+           10111110
+           00000000
+           10000011
+           00000111
+           11010011
+           0011
+        ");
 
         let encoded = block_encode(&orig);
 
@@ -108,20 +108,20 @@ mod test {
     #[test]
     fn decodes_correctly() {
 
-        let orig = new_bits![
-            0, 0, 0, 1, 0, 0, 0, 0,
-            1, 0, 1, 1, 0, 0, 0, 0,
-            1, 0, 1, 1, 1, 1, 1, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 0, 0, 0, 0, 0, 1, 1,
-            0, 0, 0, 0, 0, 1, 1, 1,
-            1, 1, 0, 1, 0, 0, 1, 1,
-            0, 0, 1, 1,
+        let orig = from_bitstr("
+           00010000
+           10110000
+           10111110
+           00000000
+           10000011
+           00000111
+           11010011
+           0011
 
             // checksum
-            1, 1, 0, 1, 1, 1, 1, 0,
-            1, 1, 1, 1, 0, 0, 0, 1
-        ];
+           11011110
+           11110001
+        ");
 
         let decoded = block_decode(&orig).unwrap();
         println!("{decoded}");
@@ -132,7 +132,7 @@ mod test {
     fn detects_error() {
 
         // Same example as above with a bit error
-        let orig = new_bits![
+        let orig = from_bitstr("
             0, 0, 0, 1, 0, 0, 0, 0,
             1, 0, 1, 1, 0, 0, 0, 0,
             1, 0, 1, 1, 1, 1, 1, 0,
@@ -145,7 +145,7 @@ mod test {
             // checksum
             1, 1, 0, 1, 1, 1, 1, 0,
             1, 1, 1, 1, 0, 0, 0, 1
-        ];
+        ");
 
         let result = block_decode(&orig);
         assert!(result.is_err(), "Expected error, got {:?}", result);

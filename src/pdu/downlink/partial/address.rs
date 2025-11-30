@@ -1,6 +1,6 @@
 use crate::codec::{Reader, Decodable, Encodable, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Address {
     NullPDU,
     SSI { address: u32 },
@@ -90,7 +90,8 @@ impl Encodable for Address {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use super::*;
 
     #[test]
@@ -101,6 +102,5 @@ mod test {
         let bits = writer.done();
         dbg!(bits);
     }
-
 
 }

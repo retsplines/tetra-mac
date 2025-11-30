@@ -206,9 +206,10 @@ impl Encodable for AccessAssign {
     }
 }
 
-
-mod test {
-    use bitvec::prelude::*;
+#[cfg(test)]
+mod tests {
+    
+    use crate::bits::from_bitstr;
     use super::*;
 
     #[test]
@@ -226,9 +227,7 @@ mod test {
         access_assign.encode(&mut writer);
         let bits = writer.done();
 
-        assert_eq!(bits, bits![u8, Msb0;
-            0,1,  0,0,0,0,1,0,  0,0,   0,1,1,0
-        ]);
+        assert_eq!(bits, from_bitstr("01000010000110"));
 
     }
 }

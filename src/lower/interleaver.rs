@@ -46,16 +46,15 @@ pub fn interleaver_decode(block: &Bits, k: usize, a: usize) -> Bits {
 }
         
 #[cfg(test)]
-mod test {
+mod tests {
 
-    use bitvec::prelude::*;
-    use crate::new_bits;
+    use crate::bits::from_bitstr;
 
     #[test]
     fn it_interleaves_bsch_block() {
 
         // Define a bitvec of 00001111
-        let seed = new_bits![0, 0, 0, 0, 1, 1, 1, 1];
+        let seed = from_bitstr("00001111");
         const K: usize = 120;
         const A: usize = 11;
         

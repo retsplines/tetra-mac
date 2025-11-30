@@ -78,7 +78,8 @@ impl TDMATime {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use super::*;
 
     #[test]
