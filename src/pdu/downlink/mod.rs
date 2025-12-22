@@ -16,3 +16,4 @@ pub(crate) use sync::*;
 pub(crate) use d_mle_sync::*;
 pub(crate) use d_mle_sysinfo::*;
 pub(crate) use partial::*;
+pub(crate) use mac_resource::*;

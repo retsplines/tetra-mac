@@ -2,11 +2,14 @@ use crate::bits::Bits;
 use crate::channels::LogicalChannel;
 use crate::codec::{Writer, Encodable};
 use crate::lower::scrambler::State;
+use crate::pdu;
 use crate::tdma_time::TDMATime;
 use crate::pdu::downlink::*;
 
+
 /// The possible types of downlink bursts
-enum DownlinkBurst {
+#[derive(Debug)]
+pub(crate) enum DownlinkBurst {
     Normal {
         block_1: Bits,
         block_2: Bits,
@@ -20,7 +23,7 @@ enum DownlinkBurst {
     }
 }
 
-struct MAC {
+pub struct MAC {
     tdma: TDMATime
 }
 
@@ -41,11 +44,20 @@ impl MAC {
         self.tdma.is_control_frame() && (self.tdma.multiframe() + self.tdma.slot()) % 4 == 3
     }
 
+    /// Generate a half-slot with no content
     fn generate_null_sch_hd(&self) -> Bits {
 
-        // let null_pdu = MACResourcePDU::null();
-        
-        todo!()
+        let null_pdu = pdu::downlink::MACResourcePDU::null();
+        let mut writer = Writer::new();
+        null_pdu.encode(&mut writer);
+        let null_pdu_bits = writer.done();
+
+        // Create the channel instance
+        let sch_hd = LogicalChannel::SignallingHalfDownlink;
+        let scrambler_state = State::new(0, 0, 0);
+        sch_hd.encode(null_pdu_bits, &scrambler_state);
+
+
 
     }
 

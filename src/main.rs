@@ -11,22 +11,15 @@ mod dqpsk;
 mod lower;
 mod bits;
 use bitvec::prelude::*;
-use crate::bits::from_bitstr;
 
 fn main() {
 
     env_logger::init();
-    
-    let mut bits = from_bitstr("");
 
-    // Set an arbitrary sized int in the first 8 bits
-    bits.push(true);
-    bits.push(false);
-    bits.push(false);
-    bits.push(false);
+    // Generate the next frame
+    let mac = mac::MAC::new();
+    let next_frame = mac.generate_next();
+    println!("{next_frame:?}");
 
-    // Show the bit representation
-    dbg!(&bits);
-    dbg!(bits[0]);
 }
 
