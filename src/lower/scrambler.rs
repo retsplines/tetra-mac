@@ -3,7 +3,7 @@ use bitvec::prelude::*;
 use crate::bits::Bits;
 
 #[derive(Clone)]
-pub struct State {
+pub(crate) struct State {
     pub state: Bits
 }
 
@@ -18,7 +18,12 @@ impl Display for State {
 
 impl State {
 
-    pub fn new(mcc: u32, mnc: u32, colour: u32) -> State {
+    /// Initialise with zeroes, as per the BSCH's scrambling code
+    pub(crate) fn zero() -> State {
+        Self::new(0, 0, 0)
+    }
+
+    pub(crate) fn new(mcc: u32, mnc: u32, colour: u32) -> State {
 
         // The first two bits are set
         let state = bits![mut u8, Msb0; 0; 32];
@@ -32,7 +37,7 @@ impl State {
         State { state: Bits::from_bitslice(state) }
     }
 
-    pub fn shift(&mut self, bit: bool) {
+    pub(crate) fn shift(&mut self, bit: bool) {
 
         // Remove the last bit
         self.state.drain(self.state.len() - 1..self.state.len());

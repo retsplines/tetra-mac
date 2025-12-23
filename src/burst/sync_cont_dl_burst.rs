@@ -17,9 +17,9 @@ use crate::burst::partial::phase_adjustment::{
 
 #[derive(Debug)]
 pub struct SyncContDownlinkBurst {
-    sb1_bits: Bits,
-    sb2_bits: Bits,
-    bb_bits: Bits
+    pub(crate) sb1_bits: Bits,
+    pub(crate) sb2_bits: Bits,
+    pub(crate) bb_bits: Bits
 }
 
 impl SyncContDownlinkBurst {

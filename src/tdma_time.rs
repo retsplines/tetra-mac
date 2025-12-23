@@ -28,6 +28,16 @@ impl TDMATime {
             hyperframe: 0
         }
     }
+    
+    /// Initialises a new TDMA timestamp with the specified counts
+    pub fn at(slot: u32, frame: u32, multiframe: u32, hyperframe: u32) -> Self {
+        TDMATime {
+            slot,
+            frame,
+            multiframe,
+            hyperframe
+        }
+    }
 
     /// Returns the 1-based slot number, between 1 and 4
     pub fn slot(&self) -> u32 {
@@ -71,7 +81,7 @@ impl TDMATime {
         }
     }
 
-    fn next(self) -> Self {
+    pub fn next(self) -> Self {
         let slot_number = self.as_slot_number();
         let next_slot_number = slot_number + 1;
         TDMATime::from_slot_number(next_slot_number)

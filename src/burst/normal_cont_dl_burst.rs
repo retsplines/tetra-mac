@@ -15,10 +15,10 @@ use crate::burst::partial::phase_adjustment::{
 
 #[derive(Debug)]
 pub struct NormalContDownlinkBurst {
-    bkn1_bits: Bits,
-    bkn2_bits: Bits,
-    bb_bits: Bits,
-    slot_flag: bool
+    pub bkn1_bits: Bits,
+    pub bkn2_bits: Bits,
+    pub bb_bits: Bits,
+    pub slot_flag: bool
 }
 
 impl NormalContDownlinkBurst {

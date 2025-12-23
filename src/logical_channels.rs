@@ -24,7 +24,7 @@ pub struct ChannelProperties {
     scrambling: bool,
 }
 
-pub enum LogicalChannel {
+pub(crate) enum LogicalChannel {
     AccessAssignment,
     BroadcastSynchronisation,
     TrafficHighProtection,
@@ -190,7 +190,7 @@ impl LogicalChannel {
 mod tests {
     use crate::bits::from_bitstr;
     use crate::bits::{Bits};
-    use crate::channels::LogicalChannel;
+    use crate::logical_channels::LogicalChannel;
     use crate::pdu::downlink::{MLESyncPDU, Sync};
     use crate::codec::{Decodable, Reader};
     use crate::lower::scrambler::State;

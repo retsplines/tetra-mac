@@ -4,6 +4,7 @@ mod fill_bits;
 
 pub use reader::Reader;
 pub use writer::Writer;
+pub use fill_bits::{add_fill_bits, FillBitCapacity};
 
 use crate::codec::Optional::{Absent, Present};
 
