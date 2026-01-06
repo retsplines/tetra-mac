@@ -2,7 +2,7 @@ use crate::codec::{Decodable, Encodable, Reader, Writer};
 
 #[derive(Debug)]
 pub struct LateEntryInfo {
-    late_entry_supported: bool,
+    pub late_entry_supported: bool,
 }
 
 impl Decodable for LateEntryInfo {

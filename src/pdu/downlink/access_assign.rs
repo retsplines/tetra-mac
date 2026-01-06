@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::codec::{Writer, Encodable, SizedField};
 
 #[derive(FromPrimitive, ToPrimitive)]
-enum AccessCode {
+pub enum AccessCode {
     AccessCodeA = 0b00,
     AccessCodeB = 0b01,
     AccessCodeC = 0b10,
@@ -16,7 +16,7 @@ impl SizedField for AccessCode {
 }
 
 #[derive(FromPrimitive, ToPrimitive)]
-enum BaseFrameLength {
+pub enum BaseFrameLength {
     ReservedSubslot = 0b0000,
     CLCHSubslot = 0b0001,
     OngoingFrame = 0b0010,
@@ -41,9 +41,9 @@ impl SizedField for BaseFrameLength {
     }
 }
 
-struct AccessField {
-    access_code: AccessCode,
-    base_frame_length: BaseFrameLength
+pub struct AccessField {
+    pub access_code: AccessCode,
+    pub base_frame_length: BaseFrameLength
 }
 
 impl Encodable for AccessField {
@@ -53,7 +53,7 @@ impl Encodable for AccessField {
     }
 }
 
-enum DownlinkUsageMarker {
+pub enum DownlinkUsageMarker {
     Reserved,
     CommonControl,
     AssignedControl,
@@ -78,7 +78,7 @@ impl Encodable for DownlinkUsageMarker {
     }
 }
 
-enum UplinkUsageMarker {
+pub enum UplinkUsageMarker {
     Unallocated,
     Traffic(u32)
 }
@@ -98,7 +98,7 @@ impl Encodable for UplinkUsageMarker {
 }
 
 /// ACCESS-ASSIGN, as sent in a normal frame (Frames 1-17)
-enum AccessAssignNormalFrame {
+pub enum AccessAssignNormalFrame {
     DownlinkCommonUplinkCommon {
         access_field_1: AccessField,
         access_field_2: AccessField
@@ -146,7 +146,7 @@ impl Encodable for AccessAssignNormalFrame {
 
 /// ACCESS-ASSIGN, as sent in the Control Frame (Frame 18)
 /// During the Control Frame, downlink is always for common control, so these options are omitted
-enum AccessAssignControlFrame {
+pub enum AccessAssignControlFrame {
     UplinkCommonOnly {
         access_field_1: AccessField,
         access_field_2: AccessField
@@ -192,7 +192,7 @@ impl Encodable for AccessAssignControlFrame {
     }
 }
 
-enum AccessAssign {
+pub enum AccessAssign {
     NormalFrame(AccessAssignNormalFrame),
     ControlFrame(AccessAssignControlFrame)
 }

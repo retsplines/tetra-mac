@@ -195,6 +195,8 @@ mod tests {
     use crate::codec::{Decodable, Reader};
     use crate::lower::scrambler::State;
 
+    // TODO: AACH test
+
     #[test]
     fn sync_channel_encode_decode_consistent() {
 

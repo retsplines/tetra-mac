@@ -1,11 +1,12 @@
-use crate::burst::{NormalContDownlinkBurst, SyncContDownlinkBurst, DownlinkBurst};
+use crate::bits_to_bin;
+use crate::burst::{NormalContDownlinkBurst, SyncContDownlinkBurst, DownlinkBurst, Build};
 use crate::logical_channels::LogicalChannel;
 use crate::tdma_time::TDMATime;
 use crate::upper_mac::UpperMAC;
 
 /// Generate a downlink slot for the provided time.
 /// Requests MAC blocks from the upper MAC and maps them onto a burst ready for the physical layer
-pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
+pub(crate) fn generate_dl_slot(time: &TDMATime) -> Box<dyn Build> {
 
     // TODO: this will be passed-in?
     let mac = UpperMAC::new();
@@ -13,13 +14,18 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
     // Request the block(s)
     let blocks = mac.generate_slot(time);
 
+    let aach_raw = blocks.aach.clone();
+    eprintln!("AACH {}", bits_to_bin!(aach_raw));
+    eprintln!("AACH Enc {}", bits_to_bin!(LogicalChannel::AccessAssignment.encode(aach_raw, &blocks.primary.scrambling_code)));
+
+
     // Burst type shall be based on the channel of the primary block
     match blocks.primary.logical_channel {
 
         // BSCH + (SCH/HD or BNCH) => SB
         LogicalChannel::BroadcastSynchronisation => {
 
-            DownlinkBurst::Sync (SyncContDownlinkBurst {
+            Box::new(SyncContDownlinkBurst {
                 sb1_bits: blocks.primary.logical_channel.encode(
                     blocks.primary.mac_block,
                     &blocks.primary.scrambling_code
@@ -31,7 +37,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
                     ),
                     None => panic!("BSCH provided without SB2 content")
                 },
-                bb_bits: Default::default(),
+                bb_bits: (LogicalChannel::AccessAssignment).encode(blocks.aach, &blocks.primary.scrambling_code),
             })
 
         }
@@ -39,7 +45,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
         // SCH/HD + SCH/HD => NDB
         LogicalChannel::SignallingHalfDownlink => {
 
-            DownlinkBurst::Normal (NormalContDownlinkBurst {
+            Box::new(NormalContDownlinkBurst {
                 bkn1_bits: blocks.primary.logical_channel.encode(
                     blocks.primary.mac_block,
                     &blocks.primary.scrambling_code
@@ -51,7 +57,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
                     ),
                     None => panic!("BSCH provided without SB2 content")
                 },
-                bb_bits: Default::default(),
+                bb_bits: (LogicalChannel::AccessAssignment).encode(blocks.aach, &blocks.primary.scrambling_code),
                 slot_flag: false
             })
 
@@ -61,7 +67,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
         LogicalChannel::BroadcastNetwork => {
 
             // BNCH is always mapped to bkn2, so send the secondary block in bkn1
-            DownlinkBurst::Normal (NormalContDownlinkBurst {
+            Box::new(NormalContDownlinkBurst {
                 bkn1_bits: match blocks.secondary {
                     Some(block) => block.logical_channel.encode(
                         block.mac_block,
@@ -73,7 +79,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
                     blocks.primary.mac_block,
                     &blocks.primary.scrambling_code
                 ),
-                bb_bits: Default::default(),
+                bb_bits: (LogicalChannel::AccessAssignment).encode(blocks.aach, &blocks.primary.scrambling_code),
                 slot_flag: false
             })
 
@@ -94,7 +100,7 @@ pub(crate) fn generate_dl_slot(time: &TDMATime) -> DownlinkBurst {
                 &blocks.primary.scrambling_code
             );
 
-            DownlinkBurst::Normal (NormalContDownlinkBurst {
+            Box::new(NormalContDownlinkBurst {
                 bkn1_bits: burst_bits[..216].to_bitvec(),
                 bkn2_bits: burst_bits[216..].to_bitvec(),
                 bb_bits: Default::default(),

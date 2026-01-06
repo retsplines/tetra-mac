@@ -1,6 +1,6 @@
 use phase_adjustment::phase_adjustment_bits;
 use crate::bits::Bits;
-use crate::burst::BurstExtractionError;
+use crate::burst::{Build, BurstExtractionError, Extract};
 use crate::burst::partial::training_sequence::{
     training_sequence_normal_1_bits, 
     training_sequence_normal_2_bits, 
@@ -21,10 +21,9 @@ pub struct NormalContDownlinkBurst {
     pub slot_flag: bool
 }
 
-impl NormalContDownlinkBurst {
-
+impl Build for NormalContDownlinkBurst {
     /// Builds the normal continuous downlink burst
-    pub fn build(&self) -> Bits {
+    fn build(&self) -> Bits {
 
         // Validate the lengths of the blocks
         if self.bkn1_bits.len() != 216 {
@@ -91,14 +90,17 @@ impl NormalContDownlinkBurst {
         log::info!("computed TF1 PA = {}{}", tf2_pa_bits[0], tf2_pa_bits[1]);
 
         // Insert the TF PA bits into the structure
-        burst.splice(tf1_pa_ref ..tf1_pa_ref + 2, tf1_pa_bits);
-        burst.splice(tf2_pa_ref  .. tf2_pa_ref + 2, tf2_pa_bits);
+        burst.splice(tf1_pa_ref..tf1_pa_ref + 2, tf1_pa_bits);
+        burst.splice(tf2_pa_ref..tf2_pa_ref + 2, tf2_pa_bits);
 
         burst
     }
+}
+
+impl Extract for NormalContDownlinkBurst {
 
     /// Validates and extracts the normal continuous downlink burst from bits
-    pub fn extract(burst: Bits) -> Result<NormalContDownlinkBurst, BurstExtractionError> {
+    fn extract(burst: Bits) -> Result<NormalContDownlinkBurst, BurstExtractionError> {
 
         if burst.len() != 510 {
             return Err(BurstExtractionError::IncorrectLength {

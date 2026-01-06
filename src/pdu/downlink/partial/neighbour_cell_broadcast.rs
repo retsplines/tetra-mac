@@ -2,8 +2,8 @@ use crate::codec::{Decodable, Encodable, Reader, Writer};
 
 #[derive(Debug)]
 pub struct NeighbourCellBroadcast {
-    d_nwrk_broadcast_supported: bool,
-    d_nwrk_enquiry_supported: bool,
+    pub d_nwrk_broadcast_supported: bool,
+    pub d_nwrk_enquiry_supported: bool,
 }
 
 impl Decodable for NeighbourCellBroadcast {

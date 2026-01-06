@@ -11,6 +11,16 @@ pub type Bits = BitVec<u8, Msb0>;
     };
 }
 
+/// Dump some bits as just 0 and 1 characters
+#[macro_export] macro_rules! bits_to_bin {
+     ($bits:expr) => {
+        $bits.iter().map(|b| match *b {
+            true => '1',
+            false => '0',
+        }).collect::<String>()
+     };
+ }
+
 /// Convert a string of 1s and 0s into a Bits instance
 /// The string my also contain space characters which have no effect on the resulting instance.
 pub fn from_bitstr(s: &str) -> Bits {
@@ -49,6 +59,7 @@ pub fn from_bitstr(s: &str) -> Bits {
     let mut bv = BitVec::<u8, Msb0>::from_vec(bytes);
     bv.truncate(count); // drop padded bits
     bv.shrink_to_fit();
+
 
     bv
 }

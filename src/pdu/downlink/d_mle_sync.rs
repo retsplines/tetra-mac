@@ -3,11 +3,11 @@ use crate::pdu::downlink::partial::{NeighbourCellBroadcast, CellServiceLevel, La
 
 #[derive(Debug)]
 pub struct MLESyncPDU {
-    mcc: u32,
-    mnc: u32,
-    neighbour_cell_broadcast: NeighbourCellBroadcast,
-    cell_service_level: CellServiceLevel,
-    late_entry_info: LateEntryInfo
+    pub mcc: u32,
+    pub mnc: u32,
+    pub neighbour_cell_broadcast: NeighbourCellBroadcast,
+    pub cell_service_level: CellServiceLevel,
+    pub late_entry_info: LateEntryInfo
 }
 
 

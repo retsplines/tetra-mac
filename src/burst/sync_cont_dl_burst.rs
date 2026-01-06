@@ -1,6 +1,6 @@
 use phase_adjustment::phase_adjustment_bits;
 use crate::bits::Bits;
-use crate::burst::BurstExtractionError;
+use crate::burst::{Build, BurstExtractionError, Extract};
 use crate::burst::partial::training_sequence::{
     training_sequence_normal_3_bits,
     training_sequence_sync_bits
@@ -22,10 +22,9 @@ pub struct SyncContDownlinkBurst {
     pub(crate) bb_bits: Bits
 }
 
-impl SyncContDownlinkBurst {
-
+impl Build for SyncContDownlinkBurst {
     /// Builds the synchronisation continuous downlink burst
-    pub fn build(&self) -> Bits {
+    fn build(&self) -> Bits {
 
         // Validate the lengths of the blocks
         if self.sb1_bits.len() != 120 {
@@ -84,14 +83,17 @@ impl SyncContDownlinkBurst {
         );
 
         // Insert the A and B phase adjustment bits into the structure
-        burst_bits.splice(pa_a_ref .. pa_a_ref + 2, pa_a_bits);
-        burst_bits.splice(pa_b_ref .. pa_b_ref + 2, pa_b_bits);
+        burst_bits.splice(pa_a_ref..pa_a_ref + 2, pa_a_bits);
+        burst_bits.splice(pa_b_ref..pa_b_ref + 2, pa_b_bits);
 
         burst_bits
     }
+}
 
-    /// Validate and extract the synchronisation continuous downlink burst
-    pub fn extract(burst: Bits) -> Result<SyncContDownlinkBurst, BurstExtractionError> {
+impl Extract for SyncContDownlinkBurst {
+
+/// Validate and extract the synchronisation continuous downlink burst
+    fn extract(burst: Bits) -> Result<SyncContDownlinkBurst, BurstExtractionError> {
 
         if burst.len() != 510 {
             return Err(BurstExtractionError::IncorrectLength {

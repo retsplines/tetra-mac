@@ -40,6 +40,36 @@ impl UpperMAC {
         time.is_control_frame() && (time.multiframe() + time.slot()) % 4 == 3
     }
 
+    /// Just a dummy for now to get us by...
+    fn generate_control_aach(&self, time: &TDMATime) -> Bits {
+
+        let access_field_1 = AccessField {
+            access_code: AccessCode::AccessCodeA,
+            base_frame_length: BaseFrameLength::OngoingFrame
+        };
+
+        let access_field_2 = AccessField {
+            access_code: AccessCode::AccessCodeB,
+            base_frame_length: BaseFrameLength::OngoingFrame
+        };
+
+        let access_assign = match time.is_control_frame() {
+            true => AccessAssign::ControlFrame(AccessAssignControlFrame::UplinkCommonOnly {
+                access_field_1,
+                access_field_2
+            }),
+
+            false => AccessAssign::NormalFrame(AccessAssignNormalFrame::DownlinkCommonUplinkCommon {
+                access_field_1,
+                access_field_2
+            })
+        };
+
+        let mut writer = Writer::new();
+        access_assign.encode(&mut writer);
+        writer.done()
+    }
+
     /// Generate a half-slot with no content
     fn generate_null_sch_hd(&self) -> Bits {
 
@@ -63,20 +93,20 @@ impl UpperMAC {
                 primary: TMVUnitDataChannel {
                     mac_block: bnch_bits,
                     logical_channel: LogicalChannel::BroadcastNetwork,
-                    scrambling_code: State::new(234, 0, 0), // todo: configuration?
+                    scrambling_code: State::new(0, 0, 0), // todo: configuration?
                 },
                 secondary: Some(TMVUnitDataChannel {
                     mac_block: self.generate_null_sch_hd(),
                     logical_channel: LogicalChannel::SignallingHalfDownlink,
                     scrambling_code: State::zero()
                 }),
-                aach: Default::default(),
+                aach: self.generate_control_aach(time),
             }
         }
 
         // Broadcast Sync Channel mapped in this slot?
         if self.slot_should_be_bsch(time) {
-            let bsch_bits = self.generate_bsch();
+            let bsch_bits = self.generate_bsch(time);
             return TMVUnitData {
                 primary: TMVUnitDataChannel {
                     mac_block: bsch_bits,
@@ -88,7 +118,7 @@ impl UpperMAC {
                     logical_channel: LogicalChannel::SignallingHalfDownlink,
                     scrambling_code: State::zero()
                 }),
-                aach: Default::default(),
+                aach: self.generate_control_aach(time),
             }
         }
 
@@ -99,14 +129,14 @@ impl UpperMAC {
             primary: TMVUnitDataChannel {
                 mac_block: null_sch_hd_bits.clone(),
                 logical_channel: LogicalChannel::SignallingHalfDownlink,
-                scrambling_code: State::new(234, 0, 0)
+                scrambling_code: State::new(0, 0, 0)
             },
             secondary: Some(TMVUnitDataChannel {
                 mac_block: null_sch_hd_bits.clone(),
                 logical_channel: LogicalChannel::SignallingHalfDownlink,
-                scrambling_code: State::new(234, 0, 0)
+                scrambling_code: State::new(0, 0, 0)
             }),
-            aach: Default::default()
+            aach: self.generate_control_aach(time),
         }
     }
 
@@ -153,24 +183,44 @@ impl UpperMAC {
         bnch_bits
     }
 
-    fn generate_bsch(&self) -> Bits {
+    fn generate_bsch(&self, time: &TDMATime) -> Bits {
 
         let mut writer = Writer::new();
+
+        let sync_tm_sdu = MLESyncPDU {
+            mcc: 234,
+            mnc: 0,
+            neighbour_cell_broadcast: NeighbourCellBroadcast {
+                d_nwrk_broadcast_supported: true,
+                d_nwrk_enquiry_supported: false,
+            },
+            cell_service_level: CellServiceLevel::LowCellLoad,
+            late_entry_info: LateEntryInfo {
+                late_entry_supported: false
+            }
+        };
+
+
 
         let sync_pdu = Sync {
             system_code: 0,
             colour_code: 0,
-            timeslot_number: 0,
-            frame_number: 0,
-            multiframe_number: 0,
+            timeslot_number: time.slot(),
+            frame_number: time.frame(),
+            multiframe_number: time.multiframe(),
             sharing_mode: SharingMode::ContinuousTransmission,
             ts_reserved_frames: TSReservedFrames::Reserve1,
             u_plane_dtx: false,
             frame_18_extension: false,
-            tm_sdu_bits: Bits::repeat(false, 29)
+            tm_sdu_bits: Bits::new()
         };
 
         sync_pdu.encode(&mut writer);
+
+        // Write the TM-SDU onto the end
+        // TODO: find a better way to handle this...
+        sync_tm_sdu.encode(&mut writer);
+
         writer.done()
     }
 }

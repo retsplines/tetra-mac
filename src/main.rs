@@ -29,6 +29,11 @@ fn main() {
         std::process::exit(1);
     }
 
+    // Send 1000 0-bits first to prime the synchroniser
+    for i in 0..1000 {
+        print!("0");
+    }
+
     let slot_count: i32 = args[1].parse().unwrap();
 
     let mut time = TDMATime::at(0, 17, 0, 0);
@@ -36,17 +41,11 @@ fn main() {
     // Generate the first n slots
     for f in 0..slot_count {
 
-        println!("Slot {f} TDMA Time {time:?}");
+        eprintln!("Slot {f} TDMA Time {time:?}");
 
         let next_burst = lower_mac::generate_dl_slot(&time);
-        match next_burst {
-            DownlinkBurst::Sync(burst) => {
-                println!("SyncBurst: {burst:?}")
-            }
-            DownlinkBurst::Normal(burst) => {
-                println!("NormalBurst: {burst:?}")
-            }
-        }
+        let built = next_burst.build();
+        println!("{}", bits_to_bin!(built));
 
         time = time.next();
     }
